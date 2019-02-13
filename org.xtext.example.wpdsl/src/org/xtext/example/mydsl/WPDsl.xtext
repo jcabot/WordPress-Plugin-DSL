@@ -1,0 +1,9 @@
+grammar org.xtext.example.mydsl.WPDsl with org.eclipse.xtext.common.Terminals
+
+generate wPDsl "http://www.xtext.org/example/mydsl/WPDsl"
+
+Model:
+	greetings+=Greeting*;
+	
+Greeting:
+	'Hello' name=ID '!';
