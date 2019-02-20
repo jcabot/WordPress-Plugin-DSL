@@ -1,9 +1,41 @@
 grammar org.xtext.example.mydsl.WPDsl with org.eclipse.xtext.common.Terminals
 
-generate wPDsl "http://www.xtext.org/example/mydsl/WPDsl"
+generate wpDsl "http://www.xtext.org/example/mydsl/WPDsl"
 
-Model:
-	greetings+=Greeting*;
+PluginModel :
+	PluginDefinition;
+  
+PluginDefinition:
+	'plugin' name=ID '{' globalinfo=GlobalInfo (admin=Admin)? '}';
+
+GlobalInfo:
+	'since' since=STRING
+	'link'  link=STRING;
+
+Admin:
+	'admin' '{'  (menuitems+=MenuItem)* '}'; 
+
+
+MenuItem:
+	'menuitem'  name=ID ':' type=TypeMenuItem ('parent' superMenu=[MenuItem])?;
 	
-Greeting:
-	'Hello' name=ID '!';
+TypeMenuItem:
+	NewMenuItem | ExistingMenuItem;	
+
+NewMenuItem:
+	name='New';
+	
+ExistingMenuItem:
+	name=ExistingMenuItemOptions;	
+	
+enum ExistingMenuItemOptions:
+	SETTINGSMENU='Settings' | TOOLSMENU='Tools' ;	
+
+
+//Entity:
+//    'entity' name=ID ('extends' superType=[Entity])? '{'
+//        (features+=Feature)*
+//    '}';
+ 
+//Feature:
+//    (many?='many')? name=ID ':' type=[Type];
