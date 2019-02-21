@@ -8,8 +8,18 @@
 /org.xtext.example.wpdsl/src-gen/
 /org.xtext.example.wpdsl/xtend-gen/
 /org.xtext.example.wpdsl/bin/
+/org.xtext.example.wpdsl/model/
 /org.xtext.example.wpdsl/META-INF/
 /org.xtext.example.wpdsl/.launch/
 /org.xtext.example.wpdsl/.settings/
+/org.xtext.example.wpdsl/.classpath
+/org.xtext.example.wpdsl/.project
+/org.xtext.example.wpdsl/build.properties
+/org.xtext.example.wpdsl/plugin.xml
+/org.xtext.example.wpdsl/.antlr-generator-3.2.0-patch.jar
+
+
+
+
 
 
