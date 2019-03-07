@@ -9,9 +9,9 @@ class WPDslRootFilesGenerator {
 	Resource resource
 	IFileSystemAccess2 fsa
 	IGeneratorContext context
-	String pluginName;
-	String sinceVersion;
-	String link;
+	String pluginName
+	String sinceVersion
+	String link
 	
 	new(Resource _resource, IFileSystemAccess2 _fsa, IGeneratorContext _context, String _pluginName, String _sinceVersion, String _link) 
 	{

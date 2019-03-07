@@ -6,27 +6,30 @@ PluginModel :
 	PluginDefinition;
   
 PluginDefinition:
-	'plugin' name=ID '{' globalinfo=GlobalInfo (admin=Admin)? '}';
+	'plugin' name=ID '{' globalinfo=GlobalInfo (admin=Admin)? (publicview=PublicView)?'}';
 
 GlobalInfo:
 	'since' since=STRING
 	'link'  link=STRING;
 
 Admin:
-	'admin' '{'  (menuitems+=MenuItem)* '}'; 
+	{Admin} 'admin' '{'  (menuitems+=MenuItem)* '}'; 
+	
+PublicView:
+	{PublicView} 'publicview'; 
 
 
 MenuItem:
-	'menuitem'  name=ID ':' type=TypeMenuItem ('parent' superMenu=[MenuItem])?;
-	
+	'menuitem'  name=ID ':' type=TypeMenuItem ;
+		
 TypeMenuItem:
 	NewMenuItem | ExistingMenuItem;	
 
 NewMenuItem:
-	name='New';
+	'new'('under' superMenu=[MenuItem])?;
 	
 ExistingMenuItem:
-	name=ExistingMenuItemOptions;	
+	option=ExistingMenuItemOptions;	
 	
 enum ExistingMenuItemOptions:
 	SETTINGSMENU='Settings' | TOOLSMENU='Tools' ;	

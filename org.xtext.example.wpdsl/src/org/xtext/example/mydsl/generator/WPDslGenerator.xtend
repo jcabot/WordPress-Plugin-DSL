@@ -10,6 +10,8 @@ import org.eclipse.xtext.generator.IGeneratorContext
 import org.xtext.example.mydsl.wpDsl.MenuItem
 import org.xtext.example.mydsl.wpDsl.PluginDefinition
 import org.xtext.example.mydsl.wpDsl.GlobalInfo
+import org.xtext.example.mydsl.wpDsl.Admin
+import org.xtext.example.mydsl.wpDsl.PublicView
 
 /**
  * Generates code from your model files on save.
@@ -23,15 +25,41 @@ class WPDslGenerator extends AbstractGenerator {
 		var String pluginName=resource.allContents.filter(PluginDefinition).map[name].head;
 		var String link=resource.allContents.filter(GlobalInfo).map[link].head;
 		var String sinceVersion=resource.allContents.filter(GlobalInfo).map[since].head;
-		//val String sinceVersion='1.0.0'
-	
 			
 		var rootFilesGen = new WPDslRootFilesGenerator(resource, fsa, context, pluginName, sinceVersion, link)
-		
 		rootFilesGen.createIndexFile
-		
 		rootFilesGen.createUninstallFile
 		
+		var coreFilesGen = new WPDslCoreFilesGenerator(resource, fsa, context, pluginName, sinceVersion, link)
+		coreFilesGen.createIndexFile
+		coreFilesGen.createActivatorFile
+		coreFilesGen.createDeactivatorFile
+		coreFilesGen.createLoaderFile
+		coreFilesGen.createi18nFile
+		coreFilesGen.createMainPluginFile
+		
+		var langGen = new WPDslLanguageSupportGenerator(resource, fsa, context, pluginName, sinceVersion, link)
+		langGen.createLanguagePOTFile
+		
+		if (!resource.allContents.filter(Admin).empty)
+		{
+			var adminGen = new WPDslAdminGenerator(resource, fsa, context, pluginName, sinceVersion, link);
+			adminGen.createCSSFiles
+			adminGen.createIndexFile
+			adminGen.createJSFiles
+			adminGen.createMainAdminFile
+			adminGen.createPartialsFiles
+		}		
+		
+		if (!resource.allContents.filter(PublicView).empty)
+		{
+			var publicGen = new WPDslPublicGenerator(resource, fsa, context, pluginName, sinceVersion, link);
+			publicGen.createCSSFiles
+			publicGen.createIndexFile
+			publicGen.createJSFiles
+			publicGen.createMainPublicFile
+			publicGen.createPartialsFiles
+		}		
 		
 	//	fsa.generateFile('plugin.php', 'Menu items: ' + 
 	//		resource.allContents
