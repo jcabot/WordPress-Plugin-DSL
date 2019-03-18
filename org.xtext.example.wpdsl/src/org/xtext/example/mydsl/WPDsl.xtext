@@ -6,12 +6,19 @@ PluginModel :
 	PluginDefinition;
   
 PluginDefinition:
-	'plugin' name=ID '{' globalinfo=GlobalInfo (admin=Admin)? (publicview=PublicView)?'}';
+	'plugin' name=ID '{' globalinfo=GlobalInfo (options=GenerationConfig)? (admin=Admin)? (publicview=PublicView)?'}';
 
 GlobalInfo:
+	'pluginName' pluginName=STRING
 	'since' since=STRING
-	'link'  link=STRING;
-
+	'link'  link=STRING 
+	'author' author=STRING
+	'authorURI' authorURI=STRING
+	'description' description=STRING;
+	
+GenerationConfig:
+	{GenerationConfig} 'options' '{'  (gitIgnore?='gitIgnore')? '}';
+	
 Admin:
 	{Admin} 'admin' '{'  (menuitems+=MenuItem)* '}'; 
 	
@@ -26,8 +33,16 @@ TypeMenuItem:
 	NewMenuItem | ExistingMenuItem;	
 
 NewMenuItem:
-	'new'('under' superMenu=[MenuItem])?;
+	'new'('under' superMenu=[MenuItem])? '{' menuItemInfo=MenuItemInfo '}'; // The [MenuItem] forces the referenced menu to be declared as part of the grammar
 	
+MenuItemInfo:
+	'title' miTitle=STRING
+	'slug' miPageSlug=STRING
+	('capability' miCapability = STRING )?
+	'function' miFunction = STRING
+	'icon' miIcon=STRING		
+	('position' miPosition=INT)?;
+		
 ExistingMenuItem:
 	option=ExistingMenuItemOptions;	
 	

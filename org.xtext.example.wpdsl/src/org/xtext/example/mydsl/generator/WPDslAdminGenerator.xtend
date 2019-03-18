@@ -13,8 +13,9 @@ class WPDslAdminGenerator {
 	String pluginName
 	String sinceVersion
 	String link
+	boolean newMenu
 	
-	new(Resource _resource, IFileSystemAccess2 _fsa, IGeneratorContext _context, String _pluginName, String _sinceVersion, String _link) 
+	new(Resource _resource, IFileSystemAccess2 _fsa, IGeneratorContext _context, String _pluginName, String _sinceVersion, String _link, boolean _newMenu) 
 	{
     	resource=_resource;
     	fsa=_fsa;
@@ -22,6 +23,7 @@ class WPDslAdminGenerator {
     	pluginName=_pluginName;
     	sinceVersion=_sinceVersion;
     	link=_link;
+    	newMenu=_newMenu;
   	}
 	
 	
@@ -35,7 +37,7 @@ class WPDslAdminGenerator {
  	
  	def createJSFiles()
   	{
-  		fsa.generateFile('/admin/css/'+Auxiliary::pluginNameToFileName(pluginName) + '-admin.js', jsTemplate);
+  		fsa.generateFile('/admin/js/'+Auxiliary::pluginNameToFileName(pluginName) + '-admin.js', jsTemplate);
  	}
  	
  	def createPartialsFiles()
@@ -64,11 +66,10 @@ class WPDslAdminGenerator {
 		 *
 		 * @link       «link»
 		 * @since      «sinceVersion»
-		 *
-	     * @package    «Auxiliary::pluginNameToClassName(pluginName)»
+		 * @package    «Auxiliary::pluginNameToClassName(pluginName)»
 		 * @subpackage «Auxiliary::pluginNameToClassName(pluginName)»\admin
 		 */
-	
+		
 		class «Auxiliary::pluginNameToClassName(pluginName)»_Admin {
 		
 			/**
@@ -143,6 +144,13 @@ class WPDslAdminGenerator {
 				wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/«Auxiliary::pluginNameToFileName(pluginName)»-admin.js', array( 'jquery' ), $this->version, false );
 		
 			}
+			
+		«IF newMenu»
+			/** Creation of the admin menu options
+			public function init_admin_menu() {
+				
+			}
+		«ENDIF»
 		
 		}
 		
@@ -162,7 +170,7 @@ class WPDslAdminGenerator {
 		 * This file is used to markup the admin-facing aspects of the plugin.
 		 *
 		 *
-         * @package    «Auxiliary::pluginNameToClassName(pluginName)»
+		 * @package    «Auxiliary::pluginNameToClassName(pluginName)»
 		 * @subpackage «Auxiliary::pluginNameToClassName(pluginName)»\admin\partials
 		 */
 		?>

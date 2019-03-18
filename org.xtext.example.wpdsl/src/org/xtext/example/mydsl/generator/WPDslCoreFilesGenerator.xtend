@@ -12,8 +12,12 @@ class WPDslCoreFilesGenerator {
 	String pluginName
 	String sinceVersion
 	String link
+	boolean adminSide
+	boolean publicSide
+	boolean newMenu
+
 	
-	new(Resource _resource, IFileSystemAccess2 _fsa, IGeneratorContext _context, String _pluginName, String _sinceVersion, String _link) 
+	new(Resource _resource, IFileSystemAccess2 _fsa, IGeneratorContext _context, String _pluginName, String _sinceVersion, String _link, boolean _adminSide, boolean _publicSide, boolean _newMenu) 
 	{
     	resource=_resource;
     	fsa=_fsa;
@@ -21,22 +25,25 @@ class WPDslCoreFilesGenerator {
     	pluginName=_pluginName;
     	sinceVersion=_sinceVersion;
     	link=_link;
+    	adminSide=_adminSide;
+    	publicSide=_publicSide;
+    	newMenu=_newMenu;
   	}
 	
 	
 	def createActivatorFile()
   	{
-  		fsa.generateFile('/includes/class'+Auxiliary::pluginNameToFileName(pluginName) + '-activator.php', activatorTemplate);
+  		fsa.generateFile('/includes/class-'+Auxiliary::pluginNameToFileName(pluginName) + '-activator.php', activatorTemplate);
  	}
 
 	def createDeactivatorFile()
   	{
-  		fsa.generateFile('/includes/class'+Auxiliary::pluginNameToFileName(pluginName) + '-deactivator.php', deactivatorTemplate);
+  		fsa.generateFile('/includes/class-'+Auxiliary::pluginNameToFileName(pluginName) + '-deactivator.php', deactivatorTemplate);
  	}
 
 	def createi18nFile()
   	{
-  		fsa.generateFile('/includes/class'+Auxiliary::pluginNameToFileName(pluginName) + '-i18n.php', i18nTemplate);
+  		fsa.generateFile('/includes/class-'+Auxiliary::pluginNameToFileName(pluginName) + '-i18n.php', i18nTemplate);
  	}
  		
 	def createIndexFile()
@@ -46,13 +53,13 @@ class WPDslCoreFilesGenerator {
  	
  	def createLoaderFile()
   	{
-  		fsa.generateFile('/includes/class'+Auxiliary::pluginNameToFileName(pluginName) + '-loader.php', loaderTemplate);
+  		fsa.generateFile('/includes/class-'+Auxiliary::pluginNameToFileName(pluginName) + '-loader.php', loaderTemplate);
  	}
  	
 
 	def createMainPluginFile()
   	{
-  		fsa.generateFile('/includes/class'+Auxiliary::pluginNameToFileName(pluginName) + '-.php', mainPluginTemplate);
+  		fsa.generateFile('/includes/class-'+Auxiliary::pluginNameToFileName(pluginName) + '.php', mainPluginTemplate);
  	}
  	
  	private def String mainPluginTemplate()
@@ -114,8 +121,12 @@ class WPDslCoreFilesGenerator {
 		
 				$this->load_dependencies();
 				$this->set_locale();
+				«IF adminSide»
 				$this->define_admin_hooks();
+				«ENDIF»
+				«IF publicSide»
 				$this->define_public_hooks();
+				«ENDIF»
 		
 			}
 		
@@ -148,19 +159,21 @@ class WPDslCoreFilesGenerator {
 				 */
 				require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-«Auxiliary::pluginNameToFileName(pluginName)»-i18n.php';
 		
+		«IF adminSide»
 				/**
 				 * The class responsible for defining all actions that occur in the admin area.
 				 */
 				require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-«Auxiliary::pluginNameToFileName(pluginName)»-admin.php';
+		«ENDIF»
 		
+		«IF publicSide»
 				/**
 				 * The class responsible for defining all actions that occur in the public-facing
 				 * side of the site.
 				 */
 				require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-«Auxiliary::pluginNameToFileName(pluginName)»-public.php';
-		
+		«ENDIF»
 				$this->loader = new «Auxiliary::pluginNameToClassName(pluginName)»_Loader();
-		
 			}
 		
 			/**
@@ -172,13 +185,11 @@ class WPDslCoreFilesGenerator {
 			 * @access   private
 			 */
 			private function set_locale() {
-		
 				$plugin_i18n = new «Auxiliary::pluginNameToClassName(pluginName)»_i18n();
-		
 				$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
-		
 			}
 		
+		«IF adminSide»
 			/**
 			 * Register all of the hooks related to the admin area functionality
 			 * of the plugin.
@@ -186,14 +197,17 @@ class WPDslCoreFilesGenerator {
 			 * @access   private
 			 */
 			private function define_admin_hooks() {
-		
 				$plugin_admin = new «Auxiliary::pluginNameToClassName(pluginName)»_Admin( $this->get_plugin_name(), $this->get_version() );
-		
 				$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 				$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
-		
+				
+			«IF newMenu»
+				$this->loader->add_action( 'admin_menu', $plugin_admin, 'init_admin_menu' ); 	// Registering also the main plugin menu
+			«ENDIF»
 			}
+		«ENDIF»
 		
+		«IF publicSide»
 			/**
 			 * Register all of the hooks related to the public-facing functionality
 			 * of the plugin.
@@ -201,13 +215,11 @@ class WPDslCoreFilesGenerator {
 			 * @access   private
 			 */
 			private function define_public_hooks() {
-		
 				$plugin_public = new «Auxiliary::pluginNameToClassName(pluginName)»_Public( $this->get_plugin_name(), $this->get_version() );
-		
 				$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 				$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
-		
 			}
+		«ENDIF»
 		
 			/**
 			 * Run the loader to execute all of the hooks with WordPress.
@@ -267,7 +279,6 @@ class WPDslCoreFilesGenerator {
 		 * @subpackage «Auxiliary::pluginNameToClassName(pluginName)»\includes
 		 */
 		
-		
 		class «Auxiliary::pluginNameToClassName(pluginName)»_Activator{
 		
 			public static function activate() {
@@ -275,9 +286,7 @@ class WPDslCoreFilesGenerator {
 			}
 		
 		}
-		
 		'''
-		
 	}
 	
 	private def String deactivatorTemplate()
@@ -293,8 +302,7 @@ class WPDslCoreFilesGenerator {
 		 * @package    «Auxiliary::pluginNameToClassName(pluginName)»
 		 * @subpackage «Auxiliary::pluginNameToClassName(pluginName)»\includes
 		 */
-		
-		
+				
 		class «Auxiliary::pluginNameToClassName(pluginName)»_Deactivator{
 		
 			public static function deactivate() {
@@ -302,17 +310,14 @@ class WPDslCoreFilesGenerator {
 			}
 		
 		}
-		
 		'''
-		
 	}
 	
 	private def String i18nTemplate()
 	{
 		'''
 		<?php
-		
-		
+			
 		/**
 		 * Define the internationalization functionality
 		 *
@@ -327,7 +332,6 @@ class WPDslCoreFilesGenerator {
 		
 		class «Auxiliary::pluginNameToClassName(pluginName)»_i18n {
 		
-		
 			/**
 			 * Load the plugin text domain for translation.
 			 *
@@ -341,13 +345,8 @@ class WPDslCoreFilesGenerator {
 				);
 		
 			}
-		
-		
-		
 		}
-		
 		'''
-		
 	}
 	
 	private def String loaderTemplate()

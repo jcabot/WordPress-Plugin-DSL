@@ -26,7 +26,7 @@ class WPDslPublicGenerator {
   	  	
 	def createCSSFiles()
   	{
-  		fsa.generateFile('/public/css/'+Auxiliary::pluginNameToFileName(pluginName) + '-admin.css', '/**
+  		fsa.generateFile('/public/css/'+Auxiliary::pluginNameToFileName(pluginName) + '-public.css', '/**
  * All of the CSS for your admin-specific functionality should be
  * included in this file.
  */');
@@ -34,12 +34,12 @@ class WPDslPublicGenerator {
  	
  	def createJSFiles()
   	{
-  		fsa.generateFile('/public/css/'+Auxiliary::pluginNameToFileName(pluginName) + '-admin.js', jsTemplate);
+  		fsa.generateFile('/public/js/'+Auxiliary::pluginNameToFileName(pluginName) + '-public.js', jsTemplate);
  	}
  	
  	def createPartialsFiles()
   	{
-  		fsa.generateFile('/public/partials/'+Auxiliary::pluginNameToFileName(pluginName) + '-admin-display.php', partialsTemplate);
+  		fsa.generateFile('/public/partials/'+Auxiliary::pluginNameToFileName(pluginName) + '-public-display.php', partialsTemplate);
  	}
  	
   	def createIndexFile()
@@ -121,7 +121,7 @@ class WPDslPublicGenerator {
   				 * class.
   				 */
   		
-  				wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/«Auxiliary::pluginNameToClassName(pluginName)»-public.css', array(), $this->version, 'all' );
+  				wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/«Auxiliary::pluginNameToFileName(pluginName)»-public.css', array(), $this->version, 'all' );
   		
   			}
   		
@@ -144,7 +144,7 @@ class WPDslPublicGenerator {
   				 * class.
   				 */
   		
-  				wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/«Auxiliary::pluginNameToClassName(pluginName)»-public.js', array( 'jquery' ), $this->version, false );
+  				wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/«Auxiliary::pluginNameToFileName(pluginName)»-public.js', array( 'jquery' ), $this->version, false );
   		
   			}
   		

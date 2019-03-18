@@ -7,7 +7,7 @@ class Auxiliary {
 		pluginName.toLowerCase.replaceAll(' ','-');
 	}
 	
-	static def String pluginNameToClassName(String pluginName)
+	static def String pluginNameToClassName(String pluginName) //keeps the upper cases in the original name definition
 	{
 		pluginName.replaceAll(' ','_');
 	}
@@ -20,6 +20,11 @@ class Auxiliary {
 	static def String normalizedPluginName(String pluginName)
 	{
 		pluginName.toLowerCase.replaceAll(' ','-');
+	}
+	
+	static def String pluginNameToFunctionName(String pluginName)
+	{
+		pluginName.toLowerCase.replaceAll(' ','_');
 	}
 	
 	
