@@ -159,20 +159,20 @@ class WPDslCoreFilesGenerator {
 				 */
 				require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-«Auxiliary::pluginNameToFileName(pluginName)»-i18n.php';
 		
-		«IF adminSide»
-				/**
-				 * The class responsible for defining all actions that occur in the admin area.
-				 */
-				require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-«Auxiliary::pluginNameToFileName(pluginName)»-admin.php';
-		«ENDIF»
+				«IF adminSide»
+					/**
+					 * The class responsible for defining all actions that occur in the admin area.
+					 */
+					require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-«Auxiliary::pluginNameToFileName(pluginName)»-admin.php';
+				«ENDIF»
 		
-		«IF publicSide»
-				/**
-				 * The class responsible for defining all actions that occur in the public-facing
-				 * side of the site.
-				 */
-				require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-«Auxiliary::pluginNameToFileName(pluginName)»-public.php';
-		«ENDIF»
+				«IF publicSide»
+						/**
+						 * The class responsible for defining all actions that occur in the public-facing
+						 * side of the site.
+						 */
+						require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-«Auxiliary::pluginNameToFileName(pluginName)»-public.php';
+				«ENDIF»
 				$this->loader = new «Auxiliary::pluginNameToClassName(pluginName)»_Loader();
 			}
 		
@@ -189,37 +189,37 @@ class WPDslCoreFilesGenerator {
 				$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
 			}
 		
-		«IF adminSide»
-			/**
-			 * Register all of the hooks related to the admin area functionality
-			 * of the plugin.
-			 *
-			 * @access   private
-			 */
-			private function define_admin_hooks() {
-				$plugin_admin = new «Auxiliary::pluginNameToClassName(pluginName)»_Admin( $this->get_plugin_name(), $this->get_version() );
-				$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
-				$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
-				
-			«IF newMenu»
-				$this->loader->add_action( 'admin_menu', $plugin_admin, 'init_admin_menu' ); 	// Registering also the main plugin menu
+			«IF adminSide»
+				/**
+				 * Register all of the hooks related to the admin area functionality
+				 * of the plugin.
+				 *
+				 * @access   private
+				 */
+				private function define_admin_hooks() {
+					$plugin_admin = new «Auxiliary::pluginNameToClassName(pluginName)»_Admin( $this->get_plugin_name(), $this->get_version() );
+					$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
+					$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+					
+				«IF newMenu»
+					$this->loader->add_action( 'admin_menu', $plugin_admin, 'init_admin_menu' ); 	// Registering also the main plugin menu
+				«ENDIF»
+				}
 			«ENDIF»
-			}
-		«ENDIF»
 		
-		«IF publicSide»
-			/**
-			 * Register all of the hooks related to the public-facing functionality
-			 * of the plugin.
-			 *
-			 * @access   private
-			 */
-			private function define_public_hooks() {
-				$plugin_public = new «Auxiliary::pluginNameToClassName(pluginName)»_Public( $this->get_plugin_name(), $this->get_version() );
-				$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
-				$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
-			}
-		«ENDIF»
+			«IF publicSide»
+				/**
+				 * Register all of the hooks related to the public-facing functionality
+				 * of the plugin.
+				 *
+				 * @access   private
+				 */
+				private function define_public_hooks() {
+					$plugin_public = new «Auxiliary::pluginNameToClassName(pluginName)»_Public( $this->get_plugin_name(), $this->get_version() );
+					$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
+					$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
+				}
+			«ENDIF»
 		
 			/**
 			 * Run the loader to execute all of the hooks with WordPress.

@@ -37,10 +37,11 @@ NewMenuItem:
 	
 MenuItemInfo:
 	'title' miTitle=STRING
-	'slug' miPageSlug=STRING
+	'pageTitle' miPageTitle=STRING
+	('slug' miPageSlug=STRING)?
 	('capability' miCapability = STRING )?
-	'function' miFunction = STRING
-	'icon' miIcon=STRING		
+	('function' miFunction = STRING)?
+	('icon' miIcon=STRING)?		
 	('position' miPosition=INT)?;
 		
 ExistingMenuItem:

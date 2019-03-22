@@ -27,5 +27,14 @@ class Auxiliary {
 		pluginName.toLowerCase.replaceAll(' ','_');
 	}
 	
+	static def String getMenuSlugFromTitle(String menuName)
+	{
+		menuName.toLowerCase.replaceAll(' ','-');
+	}
+	
+	static def String menuFunctionFromPageTitle(String pageTitle)
+	{
+		pageTitle.toLowerCase.replaceAll(' ','_');
+	}
 	
 }

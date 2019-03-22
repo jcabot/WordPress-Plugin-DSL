@@ -3,7 +3,10 @@ package org.xtext.example.mydsl.generator
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
-
+import java.util.Iterator
+import org.xtext.example.mydsl.wpDsl.NewMenuItem
+import org.xtext.example.mydsl.wpDsl.MenuItem
+import org.xtext.example.mydsl.wpDsl.MenuItemInfo
 
 class WPDslAdminGenerator {
 	
@@ -14,7 +17,8 @@ class WPDslAdminGenerator {
 	String sinceVersion
 	String link
 	boolean newMenu
-	
+	Iterable<NewMenuItem> newMenuItems
+		
 	new(Resource _resource, IFileSystemAccess2 _fsa, IGeneratorContext _context, String _pluginName, String _sinceVersion, String _link, boolean _newMenu) 
 	{
     	resource=_resource;
@@ -24,8 +28,10 @@ class WPDslAdminGenerator {
     	sinceVersion=_sinceVersion;
     	link=_link;
     	newMenu=_newMenu;
+    	if(newMenu) newMenuItems=resource.allContents.toIterable.filter(NewMenuItem);
   	}
 	
+
 	
 	def createCSSFiles()
   	{
@@ -145,18 +151,92 @@ class WPDslAdminGenerator {
 		
 			}
 			
-		«IF newMenu»
-			/** Creation of the admin menu options
-			public function init_admin_menu() {
-				
-			}
-		«ENDIF»
+			«IF newMenu»
+				/** 
+				 *  Creation of the admin menu options
+				 */
+				public function init_admin_menu() {
+					«FOR f:newMenuItems»
+						«IF (f.superMenu ===null) »	
+							add_menu_page(
+								'«f.menuItemInfo.miPageTitle»'		
+						«ELSE» 	
+						 	add_submenu_page(
+						 		'«getParentMenuItemSlug(f.superMenu)»' 
+						 		,'«f.menuItemInfo.miPageTitle»'		
+						«ENDIF» 
+							,'«f.menuItemInfo.miTitle»'
+							,'«getMenuItemCapability(f.menuItemInfo)»' 
+							,'«getMenuItemSlug(f.menuItemInfo)»'
+							,«getMenuItemFunctionWithArrayCallback(f.menuItemInfo)»		
+							«getMenuItemIcon(f.menuItemInfo)»
+							«getMenuItemPosition(f.menuItemInfo)»	 
+							);						
+					«ENDFOR»
+				}
+				««« Second iterator to create the empty functions to be filled to render the linked pages. If two items share the same page we'll have a duplicated function
+		
+				/** 
+				 *  Rendering functions for the admin menu options
+				 */
+				«FOR g:resource.allContents.toIterable.filter(NewMenuItem)»
+					public function	«getMenuItemFunction(g.menuItemInfo)»() {
+						echo '<div class="wrap">' . "\n";
+						echo '<h1>' . '«g.menuItemInfo.miPageTitle»'. '</h1>' . "\n";
+						echo '</div>' . "\n";
+					}				
+				«ENDFOR»
+			
+			«ENDIF»
 		
 		}
 		
-		
 		'''
+	}
+	
+	def String getMenuItemPosition(MenuItemInfo mi)
+	{
+		if(mi.miPosition>0) ",'"+mi.miPosition+"'"
+	}
+	
+	def String getMenuItemIcon(MenuItemInfo mi)
+	{
+		if(mi.miIcon!==null) ",'"+mi.miIcon+"'"
+	}
+	
+	def String getMenuItemFunction(MenuItemInfo mi)
+	{
+		if(mi.miFunction!==null) mi.miFunction
+		else Auxiliary::menuFunctionFromPageTitle(mi.miPageTitle)
+	}
+	
+	def String getMenuItemFunctionWithArrayCallback(MenuItemInfo mi)
+	{
+		if(mi.miFunction!==null) {"array($this,'"+mi.miFunction+"')"}
+		else {"array($this,'"+Auxiliary::menuFunctionFromPageTitle(mi.miPageTitle)+"')"}
+	}
+	
+	def String getMenuItemSlug(MenuItemInfo mi)
+	{
+		if(mi.miPageSlug!==null) mi.miPageSlug
+		else Auxiliary::getMenuSlugFromTitle(mi.miTitle)
+	}
+	
+	def String getMenuItemCapability(MenuItemInfo mi)
+	{
+		if(mi.miCapability!==null) mi.miCapability
+		else 'manage_options'
+	}
+	
+	def String getParentMenuItemSlug(MenuItem mi)
+	{
+		if (mi.type instanceof NewMenuItem )
+		{
+			if ((mi.type as NewMenuItem).menuItemInfo.miPageSlug!==null) (mi.type as NewMenuItem).menuItemInfo.miPageSlug
+			else Auxiliary::getMenuSlugFromTitle((mi.type as NewMenuItem).menuItemInfo.miTitle)
+		}
 		
+		//To be completed with the slugs of predefined menu pages (tools, settings,...).
 	}
  		
  	def String partialsTemplate()
