@@ -6,10 +6,11 @@
 The DSL is defined with [Xtext](https://www.eclipse.org/Xtext/). An [Xtend](https://www.eclipse.org/xtend/) template takes care of generating an initial boilerplate version of the WordPress plugin according to the [WordPress Boilerplate Project](https://github.com/DevinVinson/WordPress-Plugin-Boilerplate).
  
  ### WordPress DSL
- Right now the language supports very basic (but still useful to save time when writing boilerplate code) specifications:
+ Right now the language supports the definition of very basic (but still useful to save time when writing boilerplate code) plugin information:
  
  - Plugin Name
  - General Options to populare the file's headers (author, author URI, description,...)
+ - Whether your plugin has an admin view, a public view or both
  - Menu information
  
   ### WordPress Code Generator
