@@ -1,0 +1,35 @@
+plugin SeriousDuplicatedTerms
+{
+	pluginName 'Serious Duplicated Terms'
+	since '1.0.0' 
+	link 'https://wordpress.org/plugins/serious-duplicated-terms/' 
+	author 'Jordi Cabot'
+	authorURI 'https://seriouswsp.com'
+	description 'Finding and merging quasi-duplicated terms'
+	
+	options 
+	{ 
+		gitIgnore
+	}
+		
+	admin
+    { 
+   	  menuitem DuplicatedTermsMenu: new {
+   	  	title 'Serious Duplicated Terms'
+   	  	pageTitle 'Analysis Duplicated Terms'
+   	  	slug 'analysis'
+   	  }
+   	  menuitem DuplicatedTermsReport: new under  DuplicatedTermsMenu {
+   	  	title 'Analysis'
+   	  	pageTitle 'Analysis Duplicated Terms' 
+   	 }
+   	  menuitem DuplicatedTermsConfig: new under DuplicatedTermsMenu {
+   	  	title 'Configuration'
+   	 	pageTitle 'Configuration Duplicated Terms'
+   	 }
+
+    }    
+    
+    
+ //   publicview
+}
