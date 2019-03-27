@@ -20,11 +20,25 @@ GenerationConfig:
 	{GenerationConfig} 'options' '{'  (gitIgnore?='gitIgnore')? '}';
 	
 Admin:
-	{Admin} 'admin' '{'  (menuitems+=MenuItem)* '}'; 
+	{Admin} 'admin' '{' (menu=Menu)? (settings=Settings)? '}'; 
+		
+Menu:
+	'menu' name=ID '{' (menuitems+=MenuItem)* '}';
+	
+Settings:
+	'settings' name=ID ':' 'page' pageSettings=STRING '{'  (settingsections+=SettingSection)* '}';	
+	
+SettingSection:
+	'section' name=ID ':' 'desc' desc=STRING 'fields' '{' (settingsfields+=SettingField)* '}';
+	
+SettingField:
+	'option' name=ID ':' 'desc' setDesc=STRING 'type' setType=HTMLFormFieldTypes ('default' setDefault = STRING )?;
+		
+enum HTMLFormFieldTypes:
+	NUMBER='number' | TEXT='text' | CHECKBOX='boolean';
 	
 PublicView:
 	{PublicView} 'publicview'; 
-
 
 MenuItem:
 	'menuitem'  name=ID ':' type=TypeMenuItem ;
