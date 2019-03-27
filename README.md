@@ -13,7 +13,7 @@ The DSL is defined with [Xtext](https://www.eclipse.org/Xtext/). An [Xtend](http
  - Whether your plugin has an admin view, a public view or both
  - Menu information
  
- The grammar is of the WordPress Plugin DSL is available in the *WPDsl.xtext* file. For a usage example, see the sample plugin definition in the samples folder. 
+ The grammar of the WordPress Plugin DSL is available in the *WPDsl.xtext* file. For a usage example, see the sample plugin definition in the samples folder. 
  
   ### WordPress Code Generator
   Based on the above information, we generate a ready-to-use plugin that you can move to your WordPress installation and activate. The sample folder includes, as an example, the WordPress code generated from the sample plugin.
