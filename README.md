@@ -12,11 +12,14 @@ The DSL is defined with [Xtext](https://www.eclipse.org/Xtext/). An [Xtend](http
  - General Options to populare the file's headers (author, author URI, description,...)
  - Whether your plugin has an admin view, a public view or both
  - Menu information
+ - Settings information
  
  The grammar of the WordPress Plugin DSL is available in the *WPDsl.xtext* file. For a usage example, see the sample plugin definition in the samples folder. 
  
   ### WordPress Code Generator
-  Based on the above information, we generate a ready-to-use plugin that you can move to your WordPress installation and activate. The sample folder includes, as an example, the WordPress code generated from the sample plugin.
+  Based on the above information, we generate a ready-to-use plugin that you can move to your WordPress installation and activate. The core plugin information is used to initialize the plugin code according to the [WordPress Boilerplate Project]. The Menu description is used to generate the corresopnding `add_menu_page` and `add_submenu_page` calls. The Settings specification uses the Settings and Options APIs to register the settings and read/update them. 
+  
+  The sample folder includes, as an example, the WordPress code generated from the sample plugin.
   
  
   ### Installation
