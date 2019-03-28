@@ -15,9 +15,9 @@ class WPDslCoreFilesGenerator {
 	boolean adminSide
 	boolean publicSide
 	boolean newMenu
+	boolean settings
 
-	
-	new(Resource _resource, IFileSystemAccess2 _fsa, IGeneratorContext _context, String _pluginName, String _sinceVersion, String _link, boolean _adminSide, boolean _publicSide, boolean _newMenu) 
+	new(Resource _resource, IFileSystemAccess2 _fsa, IGeneratorContext _context, String _pluginName, String _sinceVersion, String _link, boolean _adminSide, boolean _publicSide, boolean _newMenu, boolean _settings) 
 	{
     	resource=_resource;
     	fsa=_fsa;
@@ -28,6 +28,7 @@ class WPDslCoreFilesGenerator {
     	adminSide=_adminSide;
     	publicSide=_publicSide;
     	newMenu=_newMenu;
+    	settings=_settings;
   	}
 	
 	
@@ -203,6 +204,9 @@ class WPDslCoreFilesGenerator {
 					
 				«IF newMenu»
 					$this->loader->add_action( 'admin_menu', $plugin_admin, 'init_admin_menu' ); 	// Registering also the main plugin menu
+				«ENDIF»
+				«IF settings»
+					$this->loader->add_action( 'admin_init', $plugin_admin, 'init_settings' ); 	// Registering also the plugin settings
 				«ENDIF»
 				}
 			«ENDIF»

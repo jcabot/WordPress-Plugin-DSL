@@ -14,6 +14,7 @@ import org.xtext.example.mydsl.wpDsl.Admin
 import org.xtext.example.mydsl.wpDsl.PublicView
 import org.xtext.example.mydsl.wpDsl.GenerationConfig
 import org.xtext.example.mydsl.wpDsl.NewMenuItem
+import org.xtext.example.mydsl.wpDsl.Settings
 
 /**
  * Generates code from your model files on save.
@@ -32,7 +33,8 @@ class WPDslGenerator extends AbstractGenerator {
 		var String authorURI=resource.allContents.filter(GlobalInfo).map[authorURI].head; 
 		var boolean publicSide=!resource.allContents.filter(PublicView).empty;
 		var boolean adminSide=!resource.allContents.filter(Admin).empty
-		var boolean newMenu=!resource.allContents.filter(NewMenuItem).empty
+		var boolean isNewMenu=!resource.allContents.filter(NewMenuItem).empty
+		var boolean isSettings=!resource.allContents.filter(Settings).empty
 								
 		var rootFilesGen = new WPDslRootFilesGenerator(resource, fsa, context, pluginName, sinceVersion, link, description, author, authorURI)
 		rootFilesGen.createPluginFile
@@ -43,7 +45,7 @@ class WPDslGenerator extends AbstractGenerator {
 			rootFilesGen.createGitIgnoreFile;
 		}
 		
-		var coreFilesGen = new WPDslCoreFilesGenerator(resource, fsa, context, pluginName, sinceVersion, link, adminSide, publicSide, newMenu)
+		var coreFilesGen = new WPDslCoreFilesGenerator(resource, fsa, context, pluginName, sinceVersion, link, adminSide, publicSide, isNewMenu, isSettings)
 		coreFilesGen.createIndexFile
 		coreFilesGen.createActivatorFile
 		coreFilesGen.createDeactivatorFile
@@ -56,7 +58,7 @@ class WPDslGenerator extends AbstractGenerator {
 		
 		if (adminSide)
 		{
-			var adminGen = new WPDslAdminGenerator(resource, fsa, context, pluginName, sinceVersion, link, newMenu);
+			var adminGen = new WPDslAdminGenerator(resource, fsa, context, pluginName, sinceVersion, link, isNewMenu);
 			adminGen.createCSSFiles
 			adminGen.createIndexFile
 			adminGen.createJSFiles

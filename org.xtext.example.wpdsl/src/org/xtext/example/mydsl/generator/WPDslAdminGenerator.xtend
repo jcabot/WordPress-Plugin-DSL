@@ -58,11 +58,11 @@ class WPDslAdminGenerator {
  	
  	def createMainAdminFile()
   	{
-  		fsa.generateFile('/admin/class-'+Auxiliary::pluginNameToFileName(pluginName) + '-admin.php', mainadminTemplate);
+  		fsa.generateFile('/admin/class-'+Auxiliary::pluginNameToFileName(pluginName) + '-admin.php', mainAdminTemplate);
  	}
  	
  			
- 	def String mainadminTemplate()
+ 	def String mainAdminTemplate()
 	{
 		'''
 		<?php
