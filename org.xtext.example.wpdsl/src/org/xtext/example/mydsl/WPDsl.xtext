@@ -26,7 +26,7 @@ Menu:
 	'menu' name=ID '{' (menuitems+=MenuItem)* '}';
 	
 Settings:
-	'settings' name=ID ':' 'page' pageSettings=STRING '{'  (settingsections+=SettingSection)* '}';	
+	'settings' name=ID ':' 'page' pageSettings=[NewMenuItem] '{'  (settingsections+=SettingSection)* '}'; //The settings page must be one of the pages called by one of the menu items	
 	
 SettingSection:
 	'section' name=ID ':' 'desc' desc=STRING 'fields' '{' (settingsfields+=SettingField)* '}';
@@ -63,12 +63,3 @@ ExistingMenuItem:
 	
 enum ExistingMenuItemOptions:
 	SETTINGSMENU='Settings' | TOOLSMENU='Tools' ;	
-
-
-//Entity:
-//    'entity' name=ID ('extends' superType=[Entity])? '{'
-//        (features+=Feature)*
-//    '}';
- 
-//Feature:
-//    (many?='many')? name=ID ':' type=[Type];
