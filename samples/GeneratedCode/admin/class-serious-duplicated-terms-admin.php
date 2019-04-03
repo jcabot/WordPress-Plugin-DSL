@@ -85,9 +85,10 @@ class Serious_Duplicated_Terms_Admin {
 	}
 	
 	/** 
-	 *  Creation of the admin menu options
+	 *  Creation of the admin menu items
 	 */
 	public function init_admin_menu() {
+		
 		add_menu_page(
 			'Analysis Duplicated Terms'		
 			,'Serious Duplicated Terms'
@@ -111,6 +112,7 @@ class Serious_Duplicated_Terms_Admin {
 			,'configuration'
 			,array($this,'configuration_duplicated_terms')		
 			);						
+		
 	}
 			
 	/** 
@@ -121,17 +123,137 @@ class Serious_Duplicated_Terms_Admin {
 		echo '<h1>' . 'Analysis Duplicated Terms'. '</h1>' . "\n";
 		echo '</div>' . "\n";
 	}				
-	public function	analysis_duplicated_terms() {
-		echo '<div class="wrap">' . "\n";
-		echo '<h1>' . 'Analysis Duplicated Terms'. '</h1>' . "\n";
-		echo '</div>' . "\n";
-	}				
-	public function	configuration_duplicated_terms() {
-		echo '<div class="wrap">' . "\n";
-		echo '<h1>' . 'Configuration Duplicated Terms'. '</h1>' . "\n";
-		echo '</div>' . "\n";
-	}				
 			
+	
+	/** 
+	 *  Creation of the plugin settings
+	 */
+	public function init_settings() {
+		
+		register_setting(
+			'settingsPlugin_group',
+			'configuration'  					);
+		
+	
+		add_settings_section(
+			'consider',
+			'Look for duplicates in tags, categories or both',
+			false, 
+			'configuration'
+		);
+	
+	
+		add_settings_field(
+			'tags',
+			'Tags', 
+			array($this,'render_tags_field'),
+			'configuration',
+			'consider'
+		);
+		
+	
+		add_settings_field(
+			'categories',
+			'Categories', 
+			array($this,'render_categories_field'),
+			'configuration',
+			'consider'
+		);
+		
+	
+	
+		add_settings_section(
+			'distance',
+			'Consider Levenshtein Distance',
+			false, 
+			'configuration'
+		);
+	
+	
+		add_settings_field(
+			'levenshtein',
+			'Levenhstein', 
+			array($this,'render_levenshtein_field'),
+			'configuration',
+			'distance'
+		);
+		
+	
+		add_settings_field(
+			'maxDistance',
+			'Max Distance', 
+			array($this,'render_maxDistance_field'),
+			'configuration',
+			'distance'
+		);
+		
+	
+	}
+	
+	/** 
+	*  Rendering the settings page
+	*/
+	public function	configuration_duplicated_terms() {
+	
+		// Check required user capability
+		if ( !current_user_can( 'manage_options' ) )  {
+			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.' ) );
+		}
+	
+		// Admin Page Layout
+		echo '<div class="wrap">' . "\n";
+		echo '	<h1>' . get_admin_page_title() . '</h1>' . "\n";
+		echo '	<form action="options.php" method="post">' . "\n";
+	
+		settings_fields( 'settingsPlugin_group' );
+		do_settings_sections( 'configuration' );
+		submit_button();
+	
+		echo '</form>' . "\n";
+		echo '</div>' . "\n";
+	
+	}
+	
+	/** 
+	*  Rendering the options fields
+	*/
+	
+	public function render_tags_field() {
+	
+		// Retrieve the full set of options
+		$options = get_option( 'configuration' );
+		// Field output.
+		$checked = isset( $options['tags'] ) ? $options['tags'] : '0';
+		echo '<input type="checkbox" name="configuration[tags]" value="1"'  . checked(1, $checked, false) .'/>';
+	}
+	
+	public function render_categories_field() {
+	
+		// Retrieve the full set of options
+		$options = get_option( 'configuration' );
+		// Field output.
+		$checked = isset( $options['categories'] ) ? $options['categories'] : '0';
+		echo '<input type="checkbox" name="configuration[categories]" value="1"'  . checked(1, $checked, false) .'/>';
+	}
+	
+	public function render_levenshtein_field() {
+	
+		// Retrieve the full set of options
+		$options = get_option( 'configuration' );
+		// Field output.
+		$checked = isset( $options['levenshtein'] ) ? $options['levenshtein'] : '0';
+		echo '<input type="checkbox" name="configuration[levenshtein]" value="1"'  . checked(1, $checked, false) .'/>';
+	}
+	
+	public function render_maxDistance_field() {
+	
+		// Retrieve the full set of options
+		$options = get_option( 'configuration' );
+		// Field output.
+		// Set default value for this particular option in the group
+		$value = isset( $options['maxDistance'] ) ? $options['maxDistance'] : '3';
+		echo '<input type="number" name="configuration[maxDistance]" size="10" value="' . esc_attr( $value ).'" />';
+	}
 
 }
 

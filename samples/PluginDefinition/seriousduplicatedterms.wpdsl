@@ -9,27 +9,37 @@ plugin SeriousDuplicatedTerms
 	
 	options 
 	{ 
-		gitIgnore
+		gitIgnore   
 	}
 		
-	admin
-    { 
-   	  menuitem DuplicatedTermsMenu: new {
-   	  	title 'Serious Duplicated Terms'
-   	  	pageTitle 'Analysis Duplicated Terms'
-   	  	slug 'analysis'
-   	  }
-   	  menuitem DuplicatedTermsReport: new under  DuplicatedTermsMenu {
-   	  	title 'Analysis'
-   	  	pageTitle 'Analysis Duplicated Terms' 
-   	 }
-   	  menuitem DuplicatedTermsConfig: new under DuplicatedTermsMenu {
-   	  	title 'Configuration'
-   	 	pageTitle 'Configuration Duplicated Terms'
-   	 }
-
-    }    
-    
-    
+	admin pluginAdmin
+	{ 
+	  menu pluginMenu {
+		menuitem DuplicatedTermsMenu: new {
+	   	  	title 'Serious Duplicated Terms'
+	   	  	pageTitle 'Analysis Duplicated Terms'
+	   	  	slug 'analysis'
+   		}
+   	    menuitem DuplicatedTermsReport: new under DuplicatedTermsMenu {
+	   	  	title 'Analysis'
+	   	  	pageTitle 'Analysis Duplicated Terms'
+   	 	}
+   	    menuitem DuplicatedTermsConfig : new under DuplicatedTermsMenu {
+	   	  	title 'Configuration'
+	   	 	pageTitle 'Configuration Duplicated Terms' 
+        }
+      }
+	 	  
+	  settings settingsPlugin : page pluginMenu.DuplicatedTermsConfig 
+	   {
+	  	section consider : desc 'Look for duplicates in tags, categories or both' fields {
+	  		option tags : desc 'Tags' type boolean 
+	  		option categories : desc 'Categories' type boolean }
+	  	section distance: desc 'Consider Levenshtein Distance' fields{
+	  		option levenshtein: desc 'Levenhstein' type boolean 
+	  		option maxDistance: desc 'Max Distance' type number default '3' 	}
+	   }
+	}
+        
  //   publicview
 }

@@ -120,6 +120,7 @@ class Serious_Duplicated_Terms {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 		
 	$this->loader->add_action( 'admin_menu', $plugin_admin, 'init_admin_menu' ); 	// Registering also the main plugin menu
+	$this->loader->add_action( 'admin_init', $plugin_admin, 'init_settings' ); 	// Registering also the plugin settings
 	}
 
 

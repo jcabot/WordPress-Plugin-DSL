@@ -3,6 +3,7 @@ module org.xtext.example.mydsl.GenerateWPDsl
 import org.eclipse.xtext.xtext.generator.*
 import org.eclipse.xtext.xtext.generator.model.project.*
 
+
 var rootPath = ".."
 
 Workflow {
@@ -44,6 +45,10 @@ Workflow {
 			junitSupport = {
 				junitVersion = "5"
 			}
+			//formatter = formatting.Formatter2Fragment2 { generateStub = true }
+			
+		
+		
 		}
 	}
 }

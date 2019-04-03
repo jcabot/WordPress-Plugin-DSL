@@ -58,7 +58,7 @@ class WPDslGenerator extends AbstractGenerator {
 		
 		if (adminSide)
 		{
-			var adminGen = new WPDslAdminGenerator(resource, fsa, context, pluginName, sinceVersion, link, isNewMenu);
+			var adminGen = new WPDslAdminGenerator(resource, fsa, context, pluginName, sinceVersion, link, isNewMenu, isSettings);
 			adminGen.createCSSFiles
 			adminGen.createIndexFile
 			adminGen.createJSFiles

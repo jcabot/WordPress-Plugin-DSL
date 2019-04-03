@@ -7,8 +7,11 @@ import java.util.Iterator
 import org.xtext.example.mydsl.wpDsl.NewMenuItem
 import org.xtext.example.mydsl.wpDsl.MenuItem
 import org.xtext.example.mydsl.wpDsl.MenuItemInfo
+import org.xtext.example.mydsl.wpDsl.Settings
+import java.util.Set
+import java.util.HashSet
 
-class WPDslAdminGenerator {
+class WPDslAdminGenerator { 
 	
 	Resource resource
 	IFileSystemAccess2 fsa
@@ -17,9 +20,12 @@ class WPDslAdminGenerator {
 	String sinceVersion
 	String link
 	boolean newMenu
+	boolean isSettings
 	Iterable<NewMenuItem> newMenuItems
+	Set<String> processedMenuItems=new HashSet<String>();
+	Settings settings;
 		
-	new(Resource _resource, IFileSystemAccess2 _fsa, IGeneratorContext _context, String _pluginName, String _sinceVersion, String _link, boolean _newMenu) 
+	new(Resource _resource, IFileSystemAccess2 _fsa, IGeneratorContext _context, String _pluginName, String _sinceVersion, String _link, boolean _newMenu, boolean _isSettings) 
 	{
     	resource=_resource;
     	fsa=_fsa;
@@ -29,7 +35,9 @@ class WPDslAdminGenerator {
     	link=_link;
     	newMenu=_newMenu;
     	if(newMenu) newMenuItems=resource.allContents.toIterable.filter(NewMenuItem);
-  	}
+    	isSettings=_isSettings;
+    	if(isSettings) settings=resource.allContents.toIterable.filter(Settings).head;
+ 	}
 	
 
 	
@@ -153,9 +161,10 @@ class WPDslAdminGenerator {
 			
 			«IF newMenu»
 				/** 
-				 *  Creation of the admin menu options
+				 *  Creation of the admin menu items
 				 */
 				public function init_admin_menu() {
+					
 					«FOR f:newMenuItems»
 						«IF (f.superMenu ===null) »	
 							add_menu_page(
@@ -173,6 +182,7 @@ class WPDslAdminGenerator {
 							«getMenuItemPosition(f.menuItemInfo)»	 
 							);						
 					«ENDFOR»
+					
 				}
 				««« Second iterator to create the empty functions to be filled to render the linked pages. If two items share the same page we'll have a duplicated function
 		
@@ -180,18 +190,117 @@ class WPDslAdminGenerator {
 				 *  Rendering functions for the admin menu options
 				 */
 				«FOR g:resource.allContents.toIterable.filter(NewMenuItem)»
-					public function	«getMenuItemFunction(g.menuItemInfo)»() {
-						echo '<div class="wrap">' . "\n";
-						echo '<h1>' . '«g.menuItemInfo.miPageTitle»'. '</h1>' . "\n";
-						echo '</div>' . "\n";
-					}				
+					«IF (!createdMenuItemFunctionAlready(g))»
+						public function	«getNewMenuItemFunction(g.menuItemInfo)»() {
+							echo '<div class="wrap">' . "\n";
+							echo '<h1>' . '«g.menuItemInfo.miPageTitle»'. '</h1>' . "\n";
+							echo '</div>' . "\n";
+						}				
+					«ENDIF» 
 				«ENDFOR»
 			
+			«ENDIF»
+			
+			«IF isSettings» 
+				/** 
+				 *  Creation of the plugin settings
+				 */
+				public function init_settings() {
+					
+					register_setting(
+						'«settings.name»_group',
+						'«getMenuItemSlug(settings.pageSettings)»'  «««We use as name for the settings the same name of the page
+					);
+					
+				«FOR ss:settings.ssections»
+					
+						add_settings_section(
+							'«ss.name»',
+							'«ss.desc»',
+							false, 
+							'«getMenuItemSlug(settings.pageSettings)»'
+						);
+					
+					«FOR sf:ss.sfields»
+					
+						add_settings_field(
+							'«sf.name»',
+							'«sf.desc»', 
+							array($this,'render_«sf.name»_field'),
+							'«getMenuItemSlug(settings.pageSettings)»',
+							'«ss.name»'
+						);
+						
+					«ENDFOR»
+					
+				«ENDFOR»
+				}
+				
+				/** 
+				*  Rendering the settings page
+				*/
+				public function	«getMenuItemFunction(settings.pageSettings)»() {
+				
+					// Check required user capability
+					if ( !current_user_can( 'manage_options' ) )  {
+						wp_die( esc_html__( 'You do not have sufficient permissions to access this page.' ) );
+					}
+				
+					// Admin Page Layout
+					echo '<div class="wrap">' . "\n";
+					echo '	<h1>' . get_admin_page_title() . '</h1>' . "\n";
+					echo '	<form action="options.php" method="post">' . "\n";
+				
+					settings_fields( '«settings.name»_group' );
+					do_settings_sections( '«getMenuItemSlug(settings.pageSettings)»' );
+					submit_button();
+				
+					echo '</form>' . "\n";
+					echo '</div>' . "\n";
+				
+				}
+				
+				/** 
+				*  Rendering the options fields
+				*/
+				«FOR ss:settings.ssections»
+					«FOR sf:ss.sfields»
+					
+					public function render_«sf.name»_field() {
+					
+						// Retrieve the full set of options
+						$options = get_option( '«getMenuItemSlug(settings.pageSettings)»' );
+						// Field output.
+						«IF sf.type==sf.type.NUMBER || sf.type==sf.type.TEXT»
+							«IF sf.^default!==null» 
+								// Set default value for this particular option in the group
+								$value = isset( $options['«sf.name»'] ) ? $options['«sf.name»'] : '«sf.^default»';
+							«ENDIF» 
+							echo '<input type="number" name="«getMenuItemSlug(settings.pageSettings)»[«sf.name»]" size="10" value="' . esc_attr( $value ).'" />';
+						«ELSEIF sf.type==sf.type.CHECKBOX» 
+							$checked = isset( $options['«sf.name»'] ) ? $options['«sf.name»'] : '0';
+							echo '<input type="checkbox" name="«getMenuItemSlug(settings.pageSettings)»[«sf.name»]" value="1"'  . checked(1, $checked, false) .'/>';
+						«ELSE»
+							echo '<input type="number" name="«getMenuItemSlug(settings.pageSettings)»[«sf.name»]" size="10" value="' . esc_attr( $value ).'" />';
+						«ENDIF»
+					}
+					«ENDFOR»
+				«ENDFOR»
 			«ENDIF»
 		
 		}
 		
 		'''
+	}
+	
+	def boolean createdMenuItemFunctionAlready(NewMenuItem item) {
+		if(isSettings && settings.pageSettings.type==item) true //The menu item corresponds to the settings page, if existing, is processed afterwards
+		else if (processedMenuItems.contains(item.menuItemInfo.miPageTitle)) 
+				true
+		     else {
+		     	processedMenuItems.add(item.menuItemInfo.miPageTitle);
+		     	false;
+		     }
 	}
 	
 	def String getMenuItemPosition(MenuItemInfo mi)
@@ -204,10 +313,16 @@ class WPDslAdminGenerator {
 		if(mi.miIcon!==null) ",'"+mi.miIcon+"'"
 	}
 	
-	def String getMenuItemFunction(MenuItemInfo mi)
+	def String getNewMenuItemFunction(MenuItemInfo mii)
 	{
-		if(mi.miFunction!==null) mi.miFunction
-		else Auxiliary::menuFunctionFromPageTitle(mi.miPageTitle)
+		if(mii.miFunction!==null) mii.miFunction
+		else Auxiliary::menuFunctionFromPageTitle(mii.miPageTitle)
+	}
+	
+	def String getMenuItemFunction(MenuItem mi)
+	{
+		if(mi.type instanceof NewMenuItem) getNewMenuItemFunction( (mi.type as NewMenuItem).menuItemInfo )
+		else Auxiliary::menuFunctionFromPageTitle(mi.name)
 	}
 	
 	def String getMenuItemFunctionWithArrayCallback(MenuItemInfo mi)
@@ -221,6 +336,13 @@ class WPDslAdminGenerator {
 		if(mi.miPageSlug!==null) mi.miPageSlug
 		else Auxiliary::getMenuSlugFromTitle(mi.miTitle)
 	}
+	
+	def String getMenuItemSlug(MenuItem mi)
+	{
+		if(mi.type instanceof NewMenuItem) getMenuItemSlug( (mi.type as NewMenuItem).menuItemInfo )
+		else Auxiliary::getMenuSlugFromTitle(mi.name)
+	}
+	
 	
 	def String getMenuItemCapability(MenuItemInfo mi)
 	{

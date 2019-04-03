@@ -20,26 +20,11 @@ GenerationConfig:
 	{GenerationConfig} 'options' '{'  (gitIgnore?='gitIgnore')? '}';
 	
 Admin:
-	{Admin} 'admin' '{' (menu=Menu)? (settings=Settings)? '}'; 
+	{Admin} 'admin' name=ID '{' (menu=Menu)? (settings=Settings)? '}'; 
 		
 Menu:
 	'menu' name=ID '{' (menuitems+=MenuItem)* '}';
 	
-Settings:
-	'settings' name=ID ':' 'page' pageSettings=[NewMenuItem] '{'  (settingsections+=SettingSection)* '}'; //The settings page must be one of the pages called by one of the menu items	
-	
-SettingSection:
-	'section' name=ID ':' 'desc' desc=STRING 'fields' '{' (settingsfields+=SettingField)* '}';
-	
-SettingField:
-	'option' name=ID ':' 'desc' setDesc=STRING 'type' setType=HTMLFormFieldTypes ('default' setDefault = STRING )?;
-		
-enum HTMLFormFieldTypes:
-	NUMBER='number' | TEXT='text' | CHECKBOX='boolean';
-	
-PublicView:
-	{PublicView} 'publicview'; 
-
 MenuItem:
 	'menuitem'  name=ID ':' type=TypeMenuItem ;
 		
@@ -63,3 +48,20 @@ ExistingMenuItem:
 	
 enum ExistingMenuItemOptions:
 	SETTINGSMENU='Settings' | TOOLSMENU='Tools' ;	
+	
+Settings:
+	'settings' name=ID ':' 'page' pageSettings=[MenuItem|QualifiedName] '{'  (ssections+=SettingSection)* '}'; //The settings page must be one of the pages called by one of the menu items	
+	
+SettingSection:
+	'section' name=ID ':' 'desc' desc=STRING 'fields' '{' (sfields+=SettingField)* '}';
+	
+SettingField:
+	'option' name=ID ':' 'desc' desc=STRING 'type' type=HTMLFormFieldTypes ('default' default = STRING )?;
+		
+enum HTMLFormFieldTypes:
+	NUMBER='number' | TEXT='text' | CHECKBOX='boolean';
+	
+PublicView:
+	{PublicView} 'publicview'; 
+
+QualifiedName: ID ('.' ID)*;
