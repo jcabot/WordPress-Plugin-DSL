@@ -56,8 +56,9 @@ class WPDslAdminGenerator {
  	
  	def createPartialsFiles()
   	{
-  		fsa.generateFile('/admin/partials/'+Auxiliary::pluginNameToFileName(pluginName) + '-admin-display.php', partialsTemplate);
- 	}
+  		fsa.generateFile('/admin/partials/class-'+Auxiliary::pluginNameToFileName(pluginName) + '-admin-display.php', displayTemplate);
+  		fsa.generateFile('/admin/partials/class-'+Auxiliary::pluginNameToFileName(pluginName) + '-admin-settings.php', settingsTemplate);
+   	}
  	
   	def createIndexFile()
   	{
@@ -101,19 +102,28 @@ class WPDslAdminGenerator {
 			 * @var      string    $version    The current version of this plugin.
 			 */
 			private $version;
-		
+			
 			/**
 			 * Initialize the class and set its properties.
 			 *
 			 * @param      string    $plugin_name       The name of this plugin.
 			 * @param      string    $version    The version of this plugin.
 			 */
-			public function __construct( $plugin_name, $version ) {
+			public function __construct( $plugin_name, $version) {
 		
 				$this->plugin_name = $plugin_name;
 				$this->version = $version;
+				$this->load_dependencies();
 		
 			}
+			
+			private function load_dependencies() {
+				require_once plugin_dir_path( dirname( __FILE__ ) ) .  'admin/partials/class-«Auxiliary::pluginNameToFileName(pluginName)»-admin-display.php';
+				«IF isSettings»
+					require_once plugin_dir_path( dirname( __FILE__ ) ) .  'admin/partials/class-«Auxiliary::pluginNameToFileName(pluginName)»-admin-settings.php';
+				«ENDIF»
+			}
+			
 		
 			/**
 			 * Register the stylesheets for the admin area.
@@ -158,138 +168,8 @@ class WPDslAdminGenerator {
 				wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/«Auxiliary::pluginNameToFileName(pluginName)»-admin.js', array( 'jquery' ), $this->version, false );
 		
 			}
-			
-			«IF newMenu»
-				/** 
-				 *  Creation of the admin menu items
-				 */
-				public function init_admin_menu() {
-					
-					«FOR f:newMenuItems»
-						«IF (f.superMenu ===null) »	
-							add_menu_page(
-								'«f.menuItemInfo.miPageTitle»'		
-						«ELSE» 	
-						 	add_submenu_page(
-						 		'«getParentMenuItemSlug(f.superMenu)»' 
-						 		,'«f.menuItemInfo.miPageTitle»'		
-						«ENDIF» 
-							,'«f.menuItemInfo.miTitle»'
-							,'«getMenuItemCapability(f.menuItemInfo)»' 
-							,'«getMenuItemSlug(f.menuItemInfo)»'
-							,«getMenuItemFunctionWithArrayCallback(f.menuItemInfo)»		
-							«getMenuItemIcon(f.menuItemInfo)»
-							«getMenuItemPosition(f.menuItemInfo)»	 
-							);						
-					«ENDFOR»
-					
-				}
-				««« Second iterator to create the empty functions to be filled to render the linked pages. If two items share the same page we'll have a duplicated function
-		
-				/** 
-				 *  Rendering functions for the admin menu options
-				 */
-				«FOR g:resource.allContents.toIterable.filter(NewMenuItem)»
-					«IF (!createdMenuItemFunctionAlready(g))»
-						public function	«getNewMenuItemFunction(g.menuItemInfo)»() {
-							echo '<div class="wrap">' . "\n";
-							echo '<h1>' . '«g.menuItemInfo.miPageTitle»'. '</h1>' . "\n";
-							echo '</div>' . "\n";
-						}				
-					«ENDIF» 
-				«ENDFOR»
-			
-			«ENDIF»
-			
-			«IF isSettings» 
-				/** 
-				 *  Creation of the plugin settings
-				 */
-				public function init_settings() {
-					
-					register_setting(
-						'«settings.name»_group',
-						'«getMenuItemSlug(settings.pageSettings)»'  «««We use as name for the settings the same name of the page
-					);
-					
-				«FOR ss:settings.ssections»
-					
-						add_settings_section(
-							'«ss.name»',
-							'«ss.desc»',
-							false, 
-							'«getMenuItemSlug(settings.pageSettings)»'
-						);
-					
-					«FOR sf:ss.sfields»
-					
-						add_settings_field(
-							'«sf.name»',
-							'«sf.desc»', 
-							array($this,'render_«sf.name»_field'),
-							'«getMenuItemSlug(settings.pageSettings)»',
-							'«ss.name»'
-						);
-						
-					«ENDFOR»
-					
-				«ENDFOR»
-				}
-				
-				/** 
-				*  Rendering the settings page
-				*/
-				public function	«getMenuItemFunction(settings.pageSettings)»() {
-				
-					// Check required user capability
-					if ( !current_user_can( 'manage_options' ) )  {
-						wp_die( esc_html__( 'You do not have sufficient permissions to access this page.' ) );
-					}
-				
-					// Admin Page Layout
-					echo '<div class="wrap">' . "\n";
-					echo '	<h1>' . get_admin_page_title() . '</h1>' . "\n";
-					echo '	<form action="options.php" method="post">' . "\n";
-				
-					settings_fields( '«settings.name»_group' );
-					do_settings_sections( '«getMenuItemSlug(settings.pageSettings)»' );
-					submit_button();
-				
-					echo '</form>' . "\n";
-					echo '</div>' . "\n";
-				
-				}
-				
-				/** 
-				*  Rendering the options fields
-				*/
-				«FOR ss:settings.ssections»
-					«FOR sf:ss.sfields»
-					
-					public function render_«sf.name»_field() {
-					
-						// Retrieve the full set of options
-						$options = get_option( '«getMenuItemSlug(settings.pageSettings)»' );
-						// Field output.
-						«IF sf.type==sf.type.NUMBER || sf.type==sf.type.TEXT»
-							«IF sf.^default!==null» 
-								// Set default value for this particular option in the group
-								$value = isset( $options['«sf.name»'] ) ? $options['«sf.name»'] : '«sf.^default»';
-							«ENDIF» 
-							echo '<input type="number" name="«getMenuItemSlug(settings.pageSettings)»[«sf.name»]" size="10" value="' . esc_attr( $value ).'" />';
-						«ELSEIF sf.type==sf.type.CHECKBOX» 
-							$checked = isset( $options['«sf.name»'] ) ? $options['«sf.name»'] : '0';
-							echo '<input type="checkbox" name="«getMenuItemSlug(settings.pageSettings)»[«sf.name»]" value="1"'  . checked(1, $checked, false) .'/>';
-						«ELSE»
-							echo '<input type="number" name="«getMenuItemSlug(settings.pageSettings)»[«sf.name»]" size="10" value="' . esc_attr( $value ).'" />';
-						«ENDIF»
-					}
-					«ENDFOR»
-				«ENDFOR»
-			«ENDIF»
-		
 		}
-		
+			
 		'''
 	}
 	
@@ -327,8 +207,11 @@ class WPDslAdminGenerator {
 	
 	def String getMenuItemFunctionWithArrayCallback(MenuItemInfo mi)
 	{
-		if(mi.miFunction!==null) {"array($this,'"+mi.miFunction+"')"}
-		else {"array($this,'"+Auxiliary::menuFunctionFromPageTitle(mi.miPageTitle)+"')"}
+		if(isSettings && settings.pageSettings.type instanceof NewMenuItem && (settings.pageSettings.type as NewMenuItem).menuItemInfo.miPageTitle==mi.miPageTitle) 
+			 if(mi.miFunction!==null) {"array($this->settings,'"+mi.miFunction+"')"}
+			 else {"array($this->settings,'"+Auxiliary::menuFunctionFromPageTitle(mi.miPageTitle)+"')"}
+		else if(mi.miFunction!==null) {"array($this,'"+mi.miFunction+"')"}
+			 else {"array($this,'"+Auxiliary::menuFunctionFromPageTitle(mi.miPageTitle)+"')"}
 	}
 	
 	def String getMenuItemSlug(MenuItemInfo mi)
@@ -360,8 +243,8 @@ class WPDslAdminGenerator {
 		
 		//To be completed with the slugs of predefined menu pages (tools, settings,...).
 	}
- 		
- 	def String partialsTemplate()
+	
+	def String displayTemplate()
 	{
 		'''
 		<?php
@@ -369,18 +252,201 @@ class WPDslAdminGenerator {
 		/**
 		 * Provide a admin area view for the plugin
 		 *
-		 * This file is used to markup the admin-facing aspects of the plugin.
+		 * This file is used to manage the admin-facing aspects of the plugin.
 		 *
 		 *
+		 * @link       «link»
+		 * @since      «sinceVersion»
 		 * @package    «Auxiliary::pluginNameToClassName(pluginName)»
-		 * @subpackage «Auxiliary::pluginNameToClassName(pluginName)»\admin\partials
+		 * @subpackage «Auxiliary::pluginNameToClassName(pluginName)»\admin
 		 */
-		?>
-		
-		<!-- This file should primarily consist of HTML with a little bit of PHP. -->
+		 		
+		class «Auxiliary::pluginNameToClassName(pluginName)»_Admin_Display{
+			private $plugin_name;
+		 		
+		 	private $version;
+		 	
+		 	private $admin;
+		 	
+		 	private $settings;
+		 		
+		 	/**
+		 	 * Initialize the class and set its properties.
+		 	 *
+		 	 * @param      string    $plugin_name       The name of this plugin.
+		 	 * @param      string    $version    The version of this plugin.
+		 	 * @param      «Auxiliary::pluginNameToClassName(pluginName)»_Admin    $admin    Link with the main admin object.
+		 	 */
+		 	public function __construct( $plugin_name, $version, $admin, $settings ) {
+		 		$this->plugin_name = $plugin_name;
+		 		$this->version = $version;
+		 		$this->admin = $admin;
+		 		$this->settings = $settings;
+		 	}
+		 			
+				
+			«IF newMenu»
+				/** 
+				 *  Creation of the admin menu items
+				*/
+				public function init_admin_menu() {
+				«FOR f:newMenuItems»
+					«IF (f.superMenu ===null) »	
+						add_menu_page(
+							'«f.menuItemInfo.miPageTitle»'		
+					«ELSE» 	
+					 	add_submenu_page(
+					 		'«getParentMenuItemSlug(f.superMenu)»' 
+					 		,'«f.menuItemInfo.miPageTitle»'		
+					«ENDIF» 
+						,'«f.menuItemInfo.miTitle»'
+						,'«getMenuItemCapability(f.menuItemInfo)»' 
+						,'«getMenuItemSlug(f.menuItemInfo)»'
+						,«getMenuItemFunctionWithArrayCallback(f.menuItemInfo)»		
+						«getMenuItemIcon(f.menuItemInfo)»
+						«getMenuItemPosition(f.menuItemInfo)»	 
+						);						
+				«ENDFOR»
+				}
+				««« Second iterator to create the empty functions to be filled to render the linked pages. 
+				
+				/** 
+				 *  Rendering functions for the admin menu options
+				 */
+				«FOR g:resource.allContents.toIterable.filter(NewMenuItem)»
+					«IF (!createdMenuItemFunctionAlready(g))»
+						public function	«getNewMenuItemFunction(g.menuItemInfo)»() {
+							echo '<div class="wrap">' . "\n";
+							echo '<h1>' . '«g.menuItemInfo.miPageTitle»'. '</h1>' . "\n";
+							echo '</div>' . "\n";
+						}				
+					«ENDIF» 
+				«ENDFOR»
+			«ENDIF»
+		}
 		'''
 	}
- 	
+	
+	def String settingsTemplate()
+	{
+		'''
+		<?php
+		
+		/**
+		 * Provide a admin area view for the plugin
+		 *
+		 * This file is used to manage the settings  of the plugin.
+		 *
+		 *
+		 * @link       «link»
+		 * @since      «sinceVersion»
+		 * @package    «Auxiliary::pluginNameToClassName(pluginName)»
+		 * @subpackage «Auxiliary::pluginNameToClassName(pluginName)»\admin
+		 */
+				 		
+		class «Auxiliary::pluginNameToClassName(pluginName)»_Admin_Settings{
+			private $plugin_name;
+				 		
+			private $version;
+			
+			private $admin;
+				 		
+			/**
+			 * Initialize the class and set its properties.
+			 *
+			 * @param      string    $plugin_name       The name of this plugin.
+			 * @param      string    $version    The version of this plugin.
+			 * @param      «Auxiliary::pluginNameToClassName(pluginName)»_Admin    $admin    Link with the main admin object.
+			 */
+			public function __construct( $plugin_name, $version, $admin) {
+				$this->plugin_name = $plugin_name;
+				$this->version = $version;
+				$this->admin = $admin;
+			}
+			 			
+		
+			«IF isSettings» 
+				/** 
+				*  Creation of the plugin settings
+				 */
+				public function init_settings() {
+					register_setting(
+						'«settings.name»_group',
+						'«getMenuItemSlug(settings.pageSettings)»');
+					«FOR ss:settings.ssections»
+					
+					  	add_settings_section(
+					  		'«ss.name»',
+					  		'«ss.desc»',
+					  		false, '«getMenuItemSlug(settings.pageSettings)»'
+					  	
+					  	);
+		 					
+		 			«FOR sf:ss.sfields»
+		 					
+		 				add_settings_field(
+		 					'«sf.name»',
+		 					'«sf.desc»', 
+		 					array($this,'render_«sf.name»_field'),
+		 					'«getMenuItemSlug(settings.pageSettings)»',
+		 					'«ss.name»'
+		 				);
+		 						
+		 			«ENDFOR»
+		 			
+		 		«ENDFOR»
+				}
+					
+				/** 
+				*  Rendering the settings page
+						 		*/
+				public function «getMenuItemFunction(settings.pageSettings)»() {
+					// Check required user capability
+					if ( !current_user_can( 'manage_options' ) )  {
+					wp_die( esc_html__( 'You do not have sufficient permissions to access this page.' ) );
+					}		 				
+
+					// Admin Page Layout
+					echo '<div class="wrap">' . "\n";
+					echo '	<h1>' . get_admin_page_title() . '</h1>' . "\n";
+					echo '	<form action="options.php" method="post">' . "\n";
+					settings_fields( '«settings.name»_group' );
+					do_settings_sections( '«getMenuItemSlug(settings.pageSettings)»' );
+					submit_button();
+					echo '</form>' . "\n";
+					echo '</div>' . "\n";
+				}
+		 				 				
+				/** 
+				*  Rendering the options fields
+				*/
+				«FOR ss:settings.ssections»
+					«FOR sf:ss.sfields»
+						public function render_«sf.name»_field() {
+							// Retrieve the full set of options
+							$options = get_option( '«getMenuItemSlug(settings.pageSettings)»' );
+							// Field output.
+							«IF sf.type==sf.type.NUMBER || sf.type==sf.type.TEXT»
+								«IF sf.^default!==null» 
+									// Set default value for this particular option in the group
+									$value = isset( $options['«sf.name»'] ) ? $options['«sf.name»'] : '«sf.^default»';
+								«ENDIF» 
+								echo '<input type="number" name="«getMenuItemSlug(settings.pageSettings)»[«sf.name»]" size="10" value="' . esc_attr( $value ).'" />';
+							«ELSEIF sf.type==sf.type.CHECKBOX»
+								$checked = isset( $options['«sf.name»'] ) ? $options['«sf.name»'] : '0';
+								echo '<input type="checkbox" name="«getMenuItemSlug(settings.pageSettings)»[«sf.name»]" value="1"'  . checked(1, $checked, false) .'/>';
+							«ELSE»
+								echo '<input type="number" name="«getMenuItemSlug(settings.pageSettings)»[«sf.name»]" size="10" value="' . esc_attr( $value ).'" />';
+		 					«ENDIF»
+						}
+		 			«ENDFOR»
+		 		«ENDFOR»
+			«ENDIF»
+		}
+		 		
+		'''
+	}
+ 		
  	def String jsTemplate()
 	{
 		'''

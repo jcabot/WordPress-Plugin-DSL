@@ -123,10 +123,10 @@ class WPDslCoreFilesGenerator {
 				$this->load_dependencies();
 				$this->set_locale();
 				«IF adminSide»
-				$this->define_admin_hooks();
+					$this->define_admin_hooks();
 				«ENDIF»
 				«IF publicSide»
-				$this->define_public_hooks();
+					$this->define_public_hooks();
 				«ENDIF»
 		
 			}
@@ -202,12 +202,16 @@ class WPDslCoreFilesGenerator {
 					$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 					$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 					
-				«IF newMenu»
-					$this->loader->add_action( 'admin_menu', $plugin_admin, 'init_admin_menu' ); 	// Registering also the main plugin menu
-				«ENDIF»
+				$plugin_settings=null;
 				«IF settings»
-					$this->loader->add_action( 'admin_init', $plugin_admin, 'init_settings' ); 	// Registering also the plugin settings
+					$plugin_settings = new «Auxiliary::pluginNameToClassName(pluginName)»_Admin_Settings( $this->get_plugin_name(), $this->get_version(),$plugin_admin );
+					$this->loader->add_action( 'admin_init', $plugin_settings, 'init_settings' ); 	// Registering also the plugin settings
 				«ENDIF»
+				«IF newMenu»
+					$plugin_display = new «Auxiliary::pluginNameToClassName(pluginName)»_Admin_Display( $this->get_plugin_name(), $this->get_version(), $plugin_admin, $plugin_settings );
+					$this->loader->add_action( 'admin_menu', $plugin_display, 'init_admin_menu' ); 	// Registering also the main plugin menu
+				«ENDIF»
+				
 				}
 			«ENDIF»
 		
