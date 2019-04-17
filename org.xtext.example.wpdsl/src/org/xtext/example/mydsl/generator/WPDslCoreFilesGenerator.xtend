@@ -3,6 +3,7 @@ package org.xtext.example.mydsl.generator
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
+import org.xtext.example.mydsl.wpDsl.GenerationConfig
 
 class WPDslCoreFilesGenerator {
 	
@@ -16,6 +17,7 @@ class WPDslCoreFilesGenerator {
 	boolean publicSide
 	boolean newMenu
 	boolean settings
+	boolean extendedAdmin
 
 	new(Resource _resource, IFileSystemAccess2 _fsa, IGeneratorContext _context, String _pluginName, String _sinceVersion, String _link, boolean _adminSide, boolean _publicSide, boolean _newMenu, boolean _settings) 
 	{
@@ -29,7 +31,8 @@ class WPDslCoreFilesGenerator {
     	publicSide=_publicSide;
     	newMenu=_newMenu;
     	settings=_settings;
-  	}
+    	extendedAdmin=(!resource.allContents.filter(GenerationConfig).map[extendedAdminClasses].empty) 
+	}
 	
 	
 	def createActivatorFile()
@@ -165,14 +168,18 @@ class WPDslCoreFilesGenerator {
 					 * The class responsible for defining all actions that occur in the admin area.
 					 */
 					require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-«Auxiliary::pluginNameToFileName(pluginName)»-admin.php';
+					«IF extendedAdmin»
+						require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-«Auxiliary::pluginNameToFileName(pluginName)»-admin-ext.php';
+					«ENDIF»
+					
 				«ENDIF»
 		
 				«IF publicSide»
-						/**
-						 * The class responsible for defining all actions that occur in the public-facing
-						 * side of the site.
-						 */
-						require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-«Auxiliary::pluginNameToFileName(pluginName)»-public.php';
+					/**
+					 * The class responsible for defining all actions that occur in the public-facing
+					 * side of the site.
+					 */
+					require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-«Auxiliary::pluginNameToFileName(pluginName)»-public.php';
 				«ENDIF»
 				$this->loader = new «Auxiliary::pluginNameToClassName(pluginName)»_Loader();
 			}
@@ -198,20 +205,26 @@ class WPDslCoreFilesGenerator {
 				 * @access   private
 				 */
 				private function define_admin_hooks() {
-					$plugin_admin = new «Auxiliary::pluginNameToClassName(pluginName)»_Admin( $this->get_plugin_name(), $this->get_version() );
+					«IF extendedAdmin»
+						$plugin_admin = new «Auxiliary::pluginNameToClassName(pluginName)»_Admin_Ext( $this->get_plugin_name(), $this->get_version() );
+					«ELSE»
+						$plugin_admin = new «Auxiliary::pluginNameToClassName(pluginName)»_Admin( $this->get_plugin_name(), $this->get_version() );
+					«ENDIF»
 					$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 					$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
-					
-				$plugin_settings=null;
-				«IF settings»
-					$plugin_settings = new «Auxiliary::pluginNameToClassName(pluginName)»_Admin_Settings( $this->get_plugin_name(), $this->get_version(),$plugin_admin );
-					$this->loader->add_action( 'admin_init', $plugin_settings, 'init_settings' ); 	// Registering also the plugin settings
-				«ENDIF»
-				«IF newMenu»
-					$plugin_display = new «Auxiliary::pluginNameToClassName(pluginName)»_Admin_Display( $this->get_plugin_name(), $this->get_version(), $plugin_admin, $plugin_settings );
-					$this->loader->add_action( 'admin_menu', $plugin_display, 'init_admin_menu' ); 	// Registering also the main plugin menu
-				«ENDIF»
-				
+					$plugin_settings=null;
+					«IF settings»
+						$plugin_settings = new «Auxiliary::pluginNameToClassName(pluginName)»_Admin_Settings( $this->get_plugin_name(), $this->get_version(),$plugin_admin );
+						$this->loader->add_action( 'admin_init', $plugin_settings, 'init_settings' ); 	// Registering also the plugin settings
+					«ENDIF»
+					«IF newMenu»
+						«IF extendedAdmin»
+							$plugin_display = new «Auxiliary::pluginNameToClassName(pluginName)»_Admin_Display_Ext( $this->get_plugin_name(), $this->get_version(), $plugin_admin, $plugin_settings );
+						«ELSE»
+							$plugin_display = new «Auxiliary::pluginNameToClassName(pluginName)»_Admin_Display( $this->get_plugin_name(), $this->get_version(), $plugin_admin, $plugin_settings );
+						«ENDIF»
+						$this->loader->add_action( 'admin_menu', $plugin_display, 'init_admin_menu' ); 	// Registering also the main plugin menu
+					«ENDIF»
 				}
 			«ENDIF»
 		

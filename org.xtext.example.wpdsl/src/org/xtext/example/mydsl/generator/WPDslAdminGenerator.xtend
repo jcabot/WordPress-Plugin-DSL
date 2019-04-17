@@ -10,6 +10,7 @@ import org.xtext.example.mydsl.wpDsl.MenuItemInfo
 import org.xtext.example.mydsl.wpDsl.Settings
 import java.util.Set
 import java.util.HashSet
+import org.xtext.example.mydsl.wpDsl.GenerationConfig
 
 class WPDslAdminGenerator { 
 	
@@ -24,6 +25,7 @@ class WPDslAdminGenerator {
 	Iterable<NewMenuItem> newMenuItems
 	Set<String> processedMenuItems=new HashSet<String>();
 	Settings settings;
+	boolean extendedAdmin;
 		
 	new(Resource _resource, IFileSystemAccess2 _fsa, IGeneratorContext _context, String _pluginName, String _sinceVersion, String _link, boolean _newMenu, boolean _isSettings) 
 	{
@@ -37,6 +39,7 @@ class WPDslAdminGenerator {
     	if(newMenu) newMenuItems=resource.allContents.toIterable.filter(NewMenuItem);
     	isSettings=_isSettings;
     	if(isSettings) settings=resource.allContents.toIterable.filter(Settings).head;
+    	extendedAdmin=(!resource.allContents.filter(GenerationConfig).map[extendedAdminClasses].empty) 
  	}
 	
 
@@ -90,18 +93,18 @@ class WPDslAdminGenerator {
 			/**
 			 * The ID of this plugin.
 			 *
-			 * @access   private
+			 * @access   protected
 			 * @var      string    $plugin_name    The ID of this plugin.
 			 */
-			private $plugin_name;
+			protected $plugin_name;
 		
 			/**
 			 * The version of this plugin.
 			 *
-			 * @access   private
+			 * @access   protected
 			 * @var      string    $version    The current version of this plugin.
 			 */
-			private $version;
+			protected $version;
 			
 			/**
 			 * Initialize the class and set its properties.
@@ -117,8 +120,11 @@ class WPDslAdminGenerator {
 		
 			}
 			
-			private function load_dependencies() {
+			protected function load_dependencies() {
 				require_once plugin_dir_path( dirname( __FILE__ ) ) .  'admin/partials/class-«Auxiliary::pluginNameToFileName(pluginName)»-admin-display.php';
+				«IF extendedAdmin »
+					require_once plugin_dir_path( dirname( __FILE__ ) ) .  'admin/partials/class-«Auxiliary::pluginNameToFileName(pluginName)»-admin-display-ext.php';
+				«ENDIF»
 				«IF isSettings»
 					require_once plugin_dir_path( dirname( __FILE__ ) ) .  'admin/partials/class-«Auxiliary::pluginNameToFileName(pluginName)»-admin-settings.php';
 				«ENDIF»
@@ -262,13 +268,13 @@ class WPDslAdminGenerator {
 		 */
 		 		
 		class «Auxiliary::pluginNameToClassName(pluginName)»_Admin_Display{
-			private $plugin_name;
+			protected $plugin_name;
 		 		
-		 	private $version;
+		 	protected $version;
 		 	
-		 	private $admin;
+		 	protected $admin;
 		 	
-		 	private $settings;
+		 	protected $settings;
 		 		
 		 	/**
 		 	 * Initialize the class and set its properties.
@@ -345,11 +351,11 @@ class WPDslAdminGenerator {
 		 */
 				 		
 		class «Auxiliary::pluginNameToClassName(pluginName)»_Admin_Settings{
-			private $plugin_name;
+			protected $plugin_name;
 				 		
-			private $version;
+			protected $version;
 			
-			private $admin;
+			protected $admin;
 				 		
 			/**
 			 * Initialize the class and set its properties.
@@ -399,7 +405,7 @@ class WPDslAdminGenerator {
 					
 				/** 
 				*  Rendering the settings page
-						 		*/
+				*/
 				public function «getMenuItemFunction(settings.pageSettings)»() {
 					// Check required user capability
 					if ( !current_user_can( 'manage_options' ) )  {

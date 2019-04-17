@@ -76,6 +76,8 @@ class WPDslGenerator extends AbstractGenerator {
 			publicGen.createPartialsFiles
 		}		
 		
+	
+		
 	//	fsa.generateFile('plugin.php', 'Menu items: ' + 
 	//		resource.allContents
 	//			.filter(MenuItem)
