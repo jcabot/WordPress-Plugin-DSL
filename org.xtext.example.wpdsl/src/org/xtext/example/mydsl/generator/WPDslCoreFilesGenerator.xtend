@@ -18,6 +18,7 @@ class WPDslCoreFilesGenerator {
 	boolean newMenu
 	boolean settings
 	boolean extendedAdmin
+	boolean extendedPublic
 
 	new(Resource _resource, IFileSystemAccess2 _fsa, IGeneratorContext _context, String _pluginName, String _sinceVersion, String _link, boolean _adminSide, boolean _publicSide, boolean _newMenu, boolean _settings) 
 	{
@@ -32,6 +33,7 @@ class WPDslCoreFilesGenerator {
     	newMenu=_newMenu;
     	settings=_settings;
     	extendedAdmin=(!resource.allContents.filter(GenerationConfig).map[extendedAdminClasses].empty) 
+    	extendedPublic=(!resource.allContents.filter(GenerationConfig).map[extendedPublicClasses].empty) 
 	}
 	
 	
@@ -204,7 +206,7 @@ class WPDslCoreFilesGenerator {
 				 *
 				 * @access   private
 				 */
-				private function define_admin_hooks() {
+				protected function define_admin_hooks() {
 					«IF extendedAdmin»
 						$plugin_admin = new «Auxiliary::pluginNameToClassName(pluginName)»_Admin_Ext( $this->get_plugin_name(), $this->get_version() );
 					«ELSE»
@@ -225,7 +227,15 @@ class WPDslCoreFilesGenerator {
 						«ENDIF»
 						$this->loader->add_action( 'admin_menu', $plugin_display, 'init_admin_menu' ); 	// Registering also the main plugin menu
 					«ENDIF»
+					«IF extendedAdmin»
+						$this->define_additional_admin_hooks($plugin_admin);
+					«ENDIF»
 				}
+				
+				«IF extendedAdmin»
+					protected function define_additional_admin_hooks($plugin_admin){}
+				«ENDIF»
+				
 			«ENDIF»
 		
 			«IF publicSide»
@@ -235,11 +245,17 @@ class WPDslCoreFilesGenerator {
 				 *
 				 * @access   private
 				 */
-				private function define_public_hooks() {
+				protected function define_public_hooks() {
 					$plugin_public = new «Auxiliary::pluginNameToClassName(pluginName)»_Public( $this->get_plugin_name(), $this->get_version() );
 					$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 					$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
+					«IF extendedPublic»
+						$this->define_additional_public_hooks($plugin_public);
+					«ENDIF»
 				}
+				«IF extendedPublic»
+					protected function define_additional_public_hooks($plugin_public){}
+				«ENDIF»
 			«ENDIF»
 		
 			/**

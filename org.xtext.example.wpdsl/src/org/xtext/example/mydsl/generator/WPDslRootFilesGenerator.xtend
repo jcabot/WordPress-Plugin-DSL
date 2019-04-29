@@ -3,6 +3,7 @@ package org.xtext.example.mydsl.generator
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
+import org.xtext.example.mydsl.wpDsl.GenerationConfig
 
 class WPDslRootFilesGenerator {
 	
@@ -15,6 +16,7 @@ class WPDslRootFilesGenerator {
 	String description
 	String author
 	String authorURI
+	boolean extended
 	
 	new(Resource _resource, IFileSystemAccess2 _fsa, IGeneratorContext _context, String _pluginName, String _sinceVersion, String _link, String _description, String _author, String _authorURI) 
 	{
@@ -27,6 +29,8 @@ class WPDslRootFilesGenerator {
     	description=_description
     	author=_author
     	authorURI=_authorURI
+      	extended= (!resource.allContents.filter(GenerationConfig).map[extendedAdminClasses].empty)|| (!resource.allContents.filter(GenerationConfig).map[extendedPublicClasses].empty) 
+
   	}
   	
   	def createIndexFile()
@@ -126,7 +130,9 @@ class WPDslRootFilesGenerator {
  		 * admin-specific hooks, and public-facing site hooks.
  		 */
  		require plugin_dir_path( __FILE__ ) . 'includes/class-«Auxiliary::pluginNameToFileName(pluginName)».php';
- 		
+ 		«IF extended»
+ 			require plugin_dir_path( __FILE__ ) . 'includes/class-«Auxiliary::pluginNameToFileName(pluginName)»-ext.php';
+ 		«ENDIF»
  		/**
  		 * Begins execution of the plugin.
  		 *
@@ -138,7 +144,11 @@ class WPDslRootFilesGenerator {
  		 */
  		function run_«Auxiliary::pluginNameToFunctionName(pluginName)»() {
  		
- 			$plugin = new «Auxiliary::pluginNameToClassName(pluginName)»();
+ 			«IF extended»
+ 				$plugin = new «Auxiliary::pluginNameToClassName(pluginName)»_Ext();
+ 			«ELSE»
+ 				$plugin = new «Auxiliary::pluginNameToClassName(pluginName)»();
+ 			«ENDIF»	
  			$plugin->run();
  		
  		}

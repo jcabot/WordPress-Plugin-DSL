@@ -17,7 +17,7 @@ GlobalInfo:
 	'description' description=STRING;
 	
 GenerationConfig:
-	{GenerationConfig} 'options' '{'  (gitIgnore?='gitIgnore')? (extendedAdminClasses?='extendedAdminClasses')? '}';
+	{GenerationConfig} 'options' '{'  (gitIgnore?='gitIgnore')? (extendedAdminClasses?='extendedAdminClasses')? (extendedPublicClasses?='extendedPublicClasses')? '}';
 	//The extendedAdmin forces the generator to assume that the developer has subtyped the admin and display classes and 
 	//loads them and links them but do not actually create them to avoid overwriting handwritten code
 	
