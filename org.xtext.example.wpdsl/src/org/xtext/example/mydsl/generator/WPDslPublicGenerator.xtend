@@ -3,6 +3,7 @@ package org.xtext.example.mydsl.generator
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
+import org.xtext.example.mydsl.wpDsl.GenerationConfig
 
 class WPDslPublicGenerator {
 	
@@ -12,6 +13,7 @@ class WPDslPublicGenerator {
 	String pluginName
 	String sinceVersion
 	String link
+	boolean extendedPublic
 	
 	new(Resource _resource, IFileSystemAccess2 _fsa, IGeneratorContext _context, String _pluginName, String _sinceVersion, String _link) 
 	{
@@ -21,13 +23,14 @@ class WPDslPublicGenerator {
     	pluginName=_pluginName;
     	sinceVersion=_sinceVersion;
     	link=_link;
+    	extendedPublic=(!resource.allContents.filter(GenerationConfig).map[extendedPublicClasses].empty) 
   	}
   	
   	  	
 	def createCSSFiles()
   	{
   		fsa.generateFile('/public/css/'+Auxiliary::pluginNameToFileName(pluginName) + '-public.css', '/**
- * All of the CSS for your admin-specific functionality should be
+ * All of the CSS for your public-specific functionality should be
  * included in this file.
  */');
  	}
@@ -107,19 +110,7 @@ class WPDslPublicGenerator {
   			 *
   			 * @since    1.0.0
   			 */
-  			public function enqueue_styles() {
-  		
-  				/**
-  				 * This function is provided for demonstration purposes only.
-  				 *
-  				 * An instance of this class should be passed to the run() function
-  				 * defined in Plugin_Name_Loader as all of the hooks are defined
-  				 * in that particular class.
-  				 *
-  				 * The Plugin_Name_Loader will then create the relationship
-  				 * between the defined hooks and the functions defined in this
-  				 * class.
-  				 */
+  			public function enqueue_styles() { 
   		
   				wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/«Auxiliary::pluginNameToFileName(pluginName)»-public.css', array(), $this->version, 'all' );
   		
@@ -132,22 +123,15 @@ class WPDslPublicGenerator {
   			 */
   			public function enqueue_scripts() {
   		
-  				/**
-  				 * This function is provided for demonstration purposes only.
-  				 *
-  				 * An instance of this class should be passed to the run() function
-  				 * defined in Plugin_Name_Loader as all of the hooks are defined
-  				 * in that particular class.
-  				 *
-  				 * The Plugin_Name_Loader will then create the relationship
-  				 * between the defined hooks and the functions defined in this
-  				 * class.
-  				 */
-  		
   				wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/«Auxiliary::pluginNameToFileName(pluginName)»-public.js', array( 'jquery' ), $this->version, false );
-  		
+  				«IF extendedPublic »
+  					$this->define_additional_enqueue_scripts();
+  				«ENDIF»
   			}
   		
+  			«IF extendedPublic»
+  				protected function define_additional_enqueue_scripts(){}
+  			«ENDIF»
   		}
   		
   		'''
@@ -160,9 +144,9 @@ class WPDslPublicGenerator {
 		<?php
 		
 		/**
-		 * Provide a admin area view for the plugin
+		 * Provide a public area view for the plugin
 		 *
-		 * This file is used to markup the admin-facing aspects of the plugin.
+		 * This file is used to markup the public-facing aspects of the plugin.
 		 *
 		 *
          * @package    «Auxiliary::pluginNameToClassName(pluginName)»
@@ -181,7 +165,7 @@ class WPDslPublicGenerator {
 			'use strict';
 		
 			/**
-			 * All of the code for your admin-facing JavaScript source
+			 * All of the code for your public-facing JavaScript source
 			 * should reside in this file.
 			 *
 			 * Note: It has been assumed you will write jQuery code here, so the

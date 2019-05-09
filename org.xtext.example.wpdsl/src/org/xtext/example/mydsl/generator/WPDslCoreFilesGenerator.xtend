@@ -182,6 +182,9 @@ class WPDslCoreFilesGenerator {
 					 * side of the site.
 					 */
 					require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-«Auxiliary::pluginNameToFileName(pluginName)»-public.php';
+					«IF extendedPublic»
+						require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-«Auxiliary::pluginNameToFileName(pluginName)»-public-ext.php';
+					«ENDIF»
 				«ENDIF»
 				$this->loader = new «Auxiliary::pluginNameToClassName(pluginName)»_Loader();
 			}
@@ -246,7 +249,11 @@ class WPDslCoreFilesGenerator {
 				 * @access   private
 				 */
 				protected function define_public_hooks() {
-					$plugin_public = new «Auxiliary::pluginNameToClassName(pluginName)»_Public( $this->get_plugin_name(), $this->get_version() );
+					«IF extendedPublic»
+						$plugin_public = new «Auxiliary::pluginNameToClassName(pluginName)»_Public_Ext( $this->get_plugin_name(), $this->get_version() );
+					«ELSE»
+						$plugin_public = new «Auxiliary::pluginNameToClassName(pluginName)»_Public( $this->get_plugin_name(), $this->get_version() );
+					«ENDIF»
 					$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 					$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 					«IF extendedPublic»
