@@ -11,6 +11,9 @@ import org.xtext.example.mydsl.wpDsl.Settings
 import java.util.Set
 import java.util.HashSet
 import org.xtext.example.mydsl.wpDsl.GenerationConfig
+import org.xtext.example.mydsl.wpDsl.ExistingMenuItem
+import org.xtext.example.mydsl.wpDsl.ExistingMenuItemOptions
+import org.xtext.example.mydsl.wpDsl.HTMLFormFieldTypes
 
 class WPDslAdminGenerator { 
 	
@@ -39,7 +42,11 @@ class WPDslAdminGenerator {
     	if(newMenu) newMenuItems=resource.allContents.toIterable.filter(NewMenuItem);
     	isSettings=_isSettings;
     	if(isSettings) settings=resource.allContents.toIterable.filter(Settings).head;
-    	extendedAdmin=(!resource.allContents.filter(GenerationConfig).map[extendedAdminClasses].empty) 
+    	var GenerationConfig gc= resource.allContents.filter(GenerationConfig).head;
+    	extendedAdmin=false;
+    	if (gc.^extendedAdminClasses) 
+    		extendedAdmin=true; 
+    	
  	}
 	
 
@@ -205,7 +212,11 @@ class WPDslAdminGenerator {
 	def String getMenuItemSlug(MenuItem mi)
 	{
 		if(mi.type instanceof NewMenuItem) getMenuItemSlug( (mi.type as NewMenuItem).menuItemInfo )
-		else Auxiliary::getMenuSlugFromTitle(mi.name)
+		else 
+		{
+			if ((mi.type as ExistingMenuItem).option==ExistingMenuItemOptions.DISCUSSION) 'discussion'	
+			//to complete with the slugs of other default WP admin pages
+		}
 	}
 	
 	
@@ -222,7 +233,6 @@ class WPDslAdminGenerator {
 			if ((mi.type as NewMenuItem).menuItemInfo.miPageSlug!==null) (mi.type as NewMenuItem).menuItemInfo.miPageSlug
 			else Auxiliary::getMenuSlugFromTitle((mi.type as NewMenuItem).menuItemInfo.miTitle)
 		}
-		
 		//To be completed with the slugs of predefined menu pages (tools, settings,...).
 	}
 	
@@ -353,52 +363,55 @@ class WPDslAdminGenerator {
 				 */
 				public function init_settings() {
 					register_setting(
-						'«settings.name»_group',
-						'«getMenuItemSlug(settings.pageSettings)»');
-					«FOR ss:settings.ssections»
+						«IF settings.pageSettings.type instanceof NewMenuItem»
+							'«settings.name»_group',
+						«ELSE»
+							'«getMenuItemSlug(settings.pageSettings)»',
+						«ENDIF»	
+						'«settings.name»');	
 					
+					«FOR ss:settings.ssections»
 					  	add_settings_section(
 					  		'«ss.name»',
 					  		'«ss.desc»',
 					  		false, '«getMenuItemSlug(settings.pageSettings)»'
-					  	
 					  	);
-		 					
-		 			«FOR sf:ss.sfields»
-		 					
-		 				add_settings_field(
-		 					'«sf.name»',
-		 					'«sf.desc»', 
-		 					array($this,'render_«sf.name»_field'),
-		 					'«getMenuItemSlug(settings.pageSettings)»',
-		 					'«ss.name»'
-		 				);
-		 						
-		 			«ENDFOR»
-		 			
-		 		«ENDFOR»
+					  	
+					  	«FOR sf:ss.sfields»
+					  		add_settings_field(
+					  			'«sf.name»',
+					  			'«sf.desc»', 
+					  			array($this,'render_«sf.name»_field'),
+					  			'«getMenuItemSlug(settings.pageSettings)»',
+					  			'«ss.name»'
+					  		);
+					  			 						
+					  	«ENDFOR»		 			«ENDFOR»
 				}
 					
-				/** 
-				*  Rendering the settings page
-				*/
-				public function «getMenuItemFunction(settings.pageSettings)»() {
-					// Check required user capability
-					if ( !current_user_can( 'manage_options' ) )  {
-					wp_die( esc_html__( 'You do not have sufficient permissions to access this page.' ) );
-					}		 				
-
-					// Admin Page Layout
-					echo '<div class="wrap">' . "\n";
-					echo '	<h1>' . get_admin_page_title() . '</h1>' . "\n";
-					echo '	<form action="options.php" method="post">' . "\n";
-					settings_fields( '«settings.name»_group' );
-					do_settings_sections( '«getMenuItemSlug(settings.pageSettings)»' );
-					submit_button();
-					echo '</form>' . "\n";
-					echo '</div>' . "\n";
-				}
-		 				 				
+				
+				«IF settings.pageSettings.type instanceof NewMenuItem»
+					/** 
+					*  Rendering the settings page
+					*/
+					public function «getMenuItemFunction(settings.pageSettings)»() {
+						// Check required user capability
+						if ( !current_user_can( 'manage_options' ) )  {
+						wp_die( esc_html__( 'You do not have sufficient permissions to access this page.' ) );
+						}		 				
+	
+						// Admin Page Layout
+						echo '<div class="wrap">' . "\n";
+						echo '	<h1>' . get_admin_page_title() . '</h1>' . "\n";
+						echo '	<form action="options.php" method="post">' . "\n";
+						settings_fields( '«settings.name»_group' );
+						do_settings_sections( '«getMenuItemSlug(settings.pageSettings)»' );
+						submit_button();
+						echo '</form>' . "\n";
+						echo '</div>' . "\n";
+					}
+		 			
+		 		«ENDIF»				
 				/** 
 				*  Rendering the options fields
 				*/
@@ -406,19 +419,37 @@ class WPDslAdminGenerator {
 					«FOR sf:ss.sfields»
 						public function render_«sf.name»_field() {
 							// Retrieve the full set of options
-							$options = get_option( '«getMenuItemSlug(settings.pageSettings)»' );
+							$options = get_option( '«settings.name»' );
 							// Field output.
-							«IF sf.type==sf.type.NUMBER || sf.type==sf.type.TEXT»
+							«IF sf.type==HTMLFormFieldTypes.NUMBER || sf.type==HTMLFormFieldTypes.TEXT»
 								«IF sf.^default!==null» 
 									// Set default value for this particular option in the group
 									$value = isset( $options['«sf.name»'] ) ? $options['«sf.name»'] : '«sf.^default»';
+								«ELSE»
+									$value =  isset( $options['«sf.name»'] ) ? $options['«sf.name»'] : '0';
 								«ENDIF» 
-								echo '<input type="number" name="«getMenuItemSlug(settings.pageSettings)»[«sf.name»]" size="10" value="' . esc_attr( $value ).'" />';
-							«ELSEIF sf.type==sf.type.CHECKBOX»
+								echo '<input type="number" name="«settings.name»[«sf.name»]" size="10" value="' . esc_attr( $value ).'" />';
+							«ELSEIF sf.type==HTMLFormFieldTypes.TEXT»
+								«IF sf.^default!==null» 
+									// Set default value for this particular option in the group
+									$value = isset( $options['«sf.name»'] ) ? $options['«sf.name»'] : '«sf.^default»';
+								«ELSE»
+									$value = isset( $options['«sf.name»'] ) ? $options['«sf.name»'] : ' ';
+								«ENDIF» 
+								echo '<input type="number" name="«settings.name»[«sf.name»]" size="10" value="' . esc_attr( $value ).'" />';
+							«ELSEIF sf.type==HTMLFormFieldTypes.RANGE»
+								«IF sf.^default!==null» 
+									// Set default value for this particular option in the group
+									$value = isset( $options['«sf.name»'] ) ? $options['«sf.name»'] : '«sf.^default»';
+								«ELSE»
+									$value = $value = isset( $options['«sf.name»'] ) ? $options['«sf.name»'] : '«sf.min»';
+								«ENDIF» 
+								echo '<input type="range" name="«settings.name»[«sf.name»]" size="10" value="' . esc_attr( $value ).'" min="«sf.^min»" max="«sf.^max»" />';
+							«ELSEIF sf.type==HTMLFormFieldTypes.CHECKBOX»
 								$checked = isset( $options['«sf.name»'] ) ? $options['«sf.name»'] : '0';
-								echo '<input type="checkbox" name="«getMenuItemSlug(settings.pageSettings)»[«sf.name»]" value="1"'  . checked(1, $checked, false) .'/>';
+								echo '<input type="checkbox" name="«settings.name»[«sf.name»]" value="1"'  . checked(1, $checked, false) .'/>';
 							«ELSE»
-								echo '<input type="number" name="«getMenuItemSlug(settings.pageSettings)»[«sf.name»]" size="10" value="' . esc_attr( $value ).'" />';
+								echo '<input type="number" name="«settings.name»[«sf.name»]" size="10" value="' . esc_attr( $value ).'" />';
 		 					«ENDIF»
 						}
 		 			«ENDFOR»

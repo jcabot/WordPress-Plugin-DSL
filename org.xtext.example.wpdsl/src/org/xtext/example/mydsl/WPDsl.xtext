@@ -49,7 +49,7 @@ ExistingMenuItem:
 	option=ExistingMenuItemOptions;	
 	
 enum ExistingMenuItemOptions:
-	SETTINGSMENU='Settings' | TOOLSMENU='Tools' ;	
+	SETTINGSMENU='Settings' | TOOLSMENU='Tools'  | DISCUSSION='Discussion';	
 	
 Settings:
 	'settings' name=ID ':' 'page' pageSettings=[MenuItem|QualifiedName] '{'  (ssections+=SettingSection)* '}'; //The settings page must be one of the pages called by one of the menu items	
@@ -58,10 +58,10 @@ SettingSection:
 	'section' name=ID ':' 'desc' desc=STRING 'fields' '{' (sfields+=SettingField)* '}';
 	
 SettingField:
-	'option' name=ID ':' 'desc' desc=STRING 'type' type=HTMLFormFieldTypes ('default' default = STRING )?;
+	'option' name=ID ':' 'desc' desc=STRING 'type' type=HTMLFormFieldTypes ('default' default = STRING )? ('min' min = INT)? ('max' max= INT )?;
 		
 enum HTMLFormFieldTypes:
-	NUMBER='number' | TEXT='text' | CHECKBOX='boolean';
+	NUMBER='number' | TEXT='text' | CHECKBOX='boolean' | RANGE='range';
 	
 PublicView:
 	{PublicView} 'publicview'; 

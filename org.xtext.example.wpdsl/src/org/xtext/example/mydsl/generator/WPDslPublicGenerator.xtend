@@ -23,8 +23,11 @@ class WPDslPublicGenerator {
     	pluginName=_pluginName;
     	sinceVersion=_sinceVersion;
     	link=_link;
-    	extendedPublic=(!resource.allContents.filter(GenerationConfig).map[extendedPublicClasses].empty) 
-  	}
+        extendedPublic=false;
+        var GenerationConfig gc= resource.allContents.filter(GenerationConfig).head;
+    	if (gc.^extendedPublicClasses) 
+    		extendedPublic=true; 
+   	}
   	
   	  	
 	def createCSSFiles()

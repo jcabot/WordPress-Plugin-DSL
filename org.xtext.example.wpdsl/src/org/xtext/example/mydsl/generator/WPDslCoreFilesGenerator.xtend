@@ -32,8 +32,14 @@ class WPDslCoreFilesGenerator {
     	publicSide=_publicSide;
     	newMenu=_newMenu;
     	settings=_settings;
-    	extendedAdmin=(!resource.allContents.filter(GenerationConfig).map[extendedAdminClasses].empty) 
-    	extendedPublic=(!resource.allContents.filter(GenerationConfig).map[extendedPublicClasses].empty) 
+ 	
+		var GenerationConfig gc= resource.allContents.filter(GenerationConfig).head;
+       	extendedAdmin=false;extendedPublic=false;
+    	if (gc.^extendedAdminClasses) 
+    		extendedAdmin=true; 
+    	if (gc.^extendedPublicClasses) 
+    		extendedPublic=true; 
+	
 	}
 	
 	

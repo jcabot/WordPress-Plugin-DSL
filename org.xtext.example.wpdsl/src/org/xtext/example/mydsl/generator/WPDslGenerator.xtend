@@ -25,12 +25,13 @@ class WPDslGenerator extends AbstractGenerator {
 	
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
 		
-		var String pluginName=resource.allContents.filter(GlobalInfo).map[pluginName].head;
-		var String link=resource.allContents.filter(GlobalInfo).map[link].head;  
-		var String sinceVersion=resource.allContents.filter(GlobalInfo).map[since].head;
-		var String description=resource.allContents.filter(GlobalInfo).map[description].head
-		var String author=resource.allContents.filter(GlobalInfo).map[author].head;
-		var String authorURI=resource.allContents.filter(GlobalInfo).map[authorURI].head; 
+		var GlobalInfo gi= resource.allContents.filter(GlobalInfo).head;
+		var String pluginName=gi.pluginName; //var String pluginName=resource.allContents.filter(GlobalInfo).map[pluginName].head;
+		var String link=gi.link;  
+		var String sinceVersion=gi.since;
+		var String description=gi.description
+		var String author=gi.author;
+		var String authorURI=gi.authorURI; 
 		var boolean publicSide=!resource.allContents.filter(PublicView).empty;
 		var boolean adminSide=!resource.allContents.filter(Admin).empty
 		var boolean isNewMenu=!resource.allContents.filter(NewMenuItem).empty
