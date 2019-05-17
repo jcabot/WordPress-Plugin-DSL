@@ -421,7 +421,7 @@ class WPDslAdminGenerator {
 							// Retrieve the full set of options
 							$options = get_option( '«settings.name»' );
 							// Field output.
-							«IF sf.type==HTMLFormFieldTypes.NUMBER || sf.type==HTMLFormFieldTypes.TEXT»
+							«IF sf.type==HTMLFormFieldTypes.NUMBER»
 								«IF sf.^default!==null» 
 									// Set default value for this particular option in the group
 									$value = isset( $options['«sf.name»'] ) ? $options['«sf.name»'] : '«sf.^default»';
@@ -436,7 +436,7 @@ class WPDslAdminGenerator {
 								«ELSE»
 									$value = isset( $options['«sf.name»'] ) ? $options['«sf.name»'] : ' ';
 								«ENDIF» 
-								echo '<input type="number" name="«settings.name»[«sf.name»]" size="10" value="' . esc_attr( $value ).'" />';
+								echo '<input type="text" name="«settings.name»[«sf.name»]" size="10" value="' . esc_attr( $value ).'" />';
 							«ELSEIF sf.type==HTMLFormFieldTypes.RANGE»
 								«IF sf.^default!==null» 
 									// Set default value for this particular option in the group

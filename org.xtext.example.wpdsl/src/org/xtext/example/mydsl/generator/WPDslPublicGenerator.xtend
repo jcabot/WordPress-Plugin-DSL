@@ -129,11 +129,13 @@ class WPDslPublicGenerator {
   				wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/«Auxiliary::pluginNameToFileName(pluginName)»-public.js', array( 'jquery' ), $this->version, false );
   				«IF extendedPublic »
   					$this->define_additional_enqueue_scripts();
+  					$this->define_additional_enqueue_styles();
   				«ENDIF»
   			}
   		
   			«IF extendedPublic»
   				protected function define_additional_enqueue_scripts(){}
+  				protected function define_additional_enqueue_styles(){}
   			«ENDIF»
   		}
   		
