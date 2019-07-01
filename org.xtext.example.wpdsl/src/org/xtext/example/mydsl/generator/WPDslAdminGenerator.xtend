@@ -437,6 +437,14 @@ class WPDslAdminGenerator {
 									$value = isset( $options['«sf.name»'] ) ? $options['«sf.name»'] : ' ';
 								«ENDIF» 
 								echo '<input type="text" name="«settings.name»[«sf.name»]" size="10" value="' . esc_attr( $value ).'" />';
+							«ELSEIF sf.type==HTMLFormFieldTypes.LONGTEXT»
+								«IF sf.^default!==null» 
+									// Set default value for this particular option in the group
+									$value = isset( $options['«sf.name»'] ) ? $options['«sf.name»'] : '«sf.^default»';
+								«ELSE»
+									$value = isset( $options['«sf.name»'] ) ? $options['«sf.name»'] : ' ';
+								«ENDIF» 
+								echo '<textarea name="«settings.name»[«sf.name»]" rows="3" cols="80">' .esc_attr( $value ).' </textarea>';
 							«ELSEIF sf.type==HTMLFormFieldTypes.RANGE»
 								«IF sf.^default!==null» 
 									// Set default value for this particular option in the group

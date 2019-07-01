@@ -61,7 +61,7 @@ SettingField:
 	'option' name=ID ':' 'desc' desc=STRING 'type' type=HTMLFormFieldTypes ('default' default = STRING )? ('min' min = INT)? ('max' max= INT )?;
 		
 enum HTMLFormFieldTypes:
-	NUMBER='number' | TEXT='text' | CHECKBOX='boolean' | RANGE='range';
+	NUMBER='number' | LONGTEXT='longtext' | TEXT='text' | CHECKBOX='boolean' | RANGE='range';
 	
 PublicView:
 	{PublicView} 'publicview'; 
